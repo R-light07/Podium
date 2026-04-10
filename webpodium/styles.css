@@ -607,6 +607,228 @@ video {
 }
 
 /* ============================================================
+   SOBRE NÓS — HISTÓRIA, MISSÃO, VISÃO, VALORES
+   ============================================================ */
+.sobre-nos {
+  background: var(--clr-bg);
+  padding: 6rem 0;
+  border-top: 1px solid var(--clr-border);
+}
+
+/* Cabeçalho */
+.sobre-nos__header {
+  max-width: 680px;
+  margin-bottom: 4rem;
+}
+.sobre-nos__intro {
+  font-size: 1.15rem;
+  color: var(--clr-muted);
+  line-height: 1.7;
+  margin-top: -0.5rem;
+}
+
+/* Pill label */
+.section-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--ff-condensed);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--clr-accent);
+  border: 1px solid rgba(230,51,41,0.35);
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  background: rgba(230,51,41,0.07);
+}
+
+/* ---- HISTÓRIA ---- */
+.historia {
+  margin-bottom: 5rem;
+}
+.historia__label {
+  margin-bottom: 2rem;
+}
+.historia__grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 4rem;
+  align-items: start;
+}
+.historia__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.historia__text p {
+  color: var(--clr-muted);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+.historia__text strong {
+  color: var(--clr-text);
+  font-weight: 700;
+}
+
+/* Milestones (mini-timeline lateral) */
+.historia__milestones {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /* border-left: 2px solid var(--clr-border); */
+  padding-left: 1.75rem;
+  position: relative;
+}
+
+.milestone {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--clr-border);
+  position: relative;
+  transition: background var(--transition);
+  /* border-radius: 0 var(--radius-sm) var(--radius-sm) 0; */
+  padding-right: 0.5rem;
+}
+.milestone:last-child { border-bottom: none; }
+.milestone:hover { background: rgba(230,51,41,0.04); }
+
+/* Dot na linha vertical */
+.milestone::before {
+  content: '';
+  position: absolute;
+  left: -1.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--clr-bg);
+  border: 2px solid var(--clr-border);
+  transition: border-color var(--transition), background var(--transition);
+}
+.milestone:hover::before {
+  border-color: var(--clr-accent);
+  background: var(--clr-accent);
+  box-shadow: 0 0 0 4px rgba(230,51,41,0.15);
+}
+
+.milestone__year {
+  font-family: var(--ff-display);
+  font-size: 1.3rem;
+  color: var(--clr-accent);
+  line-height: 1;
+  padding-top: 0.2rem;
+  min-width: 56px;
+}
+
+.milestone__content strong {
+  font-family: var(--ff-condensed);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.milestone__content p {
+  font-size: 0.82rem;
+  color: var(--clr-muted);
+  line-height: 1.5;
+}
+
+/* ---- MISSÃO VISÃO VALORES ---- */
+.mvv {
+  margin-bottom: 2rem;
+}
+
+.mvv__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.mvv-card {
+  background: var(--clr-card);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 2rem 1.75rem;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
+}
+.mvv-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  transition: opacity var(--transition);
+  opacity: 0.7;
+}
+.mvv-card--missao::before { background: var(--clr-accent); }
+.mvv-card--visao::before  { background: #3b82f6; }
+.mvv-card--valores::before{ background: #f59e0b; }
+
+.mvv-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-card);
+  border-color: rgba(255,255,255,0.15);
+}
+.mvv-card:hover::before { opacity: 1; }
+
+.mvv-card__icon {
+  font-size: 2.25rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.mvv-card h3 {
+  font-family: var(--ff-condensed);
+  font-size: 1.35rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.85rem;
+}
+.mvv-card--missao h3 { color: var(--clr-accent); }
+.mvv-card--visao h3  { color: #60a5fa; }
+.mvv-card--valores h3{ color: #fbbf24; }
+
+.mvv-card p {
+  font-size: 0.9rem;
+  color: var(--clr-muted);
+  line-height: 1.75;
+}
+
+/* Lista de valores */
+.mvv-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+.mvv-card__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--clr-muted);
+  line-height: 1.5;
+}
+.mvv-card__list li strong {
+  color: var(--clr-text);
+  font-weight: 700;
+}
+.mvv-bullet {
+  color: #fbbf24;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+/* ============================================================
    CATEGORIES
    ============================================================ */
 .categories {
