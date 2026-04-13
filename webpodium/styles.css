@@ -550,7 +550,7 @@ video {
 }
 
 .about__player {
-  width: 100%;
+  width: 90%;
   height: 100%;
   background: linear-gradient(135deg, #1e1e1e, #2a1010);
   border-radius: 150px 150px var(--radius) var(--radius);
@@ -760,7 +760,7 @@ video {
   background: var(--clr-card);
   border: 1px solid var(--clr-border);
   border-radius: var(--radius);
-  padding: 2rem 1.75rem;
+  padding: 4rem 1.75rem;
   position: relative;
   overflow: hidden;
   transition: all var(--transition);
@@ -773,9 +773,9 @@ video {
   transition: opacity var(--transition);
   opacity: 0.7;
 }
-.mvv-card--missao::before { background: var(--clr-accent); }
+/* .mvv-card--missao::before { background: var(--clr-accent); }
 .mvv-card--visao::before  { background: #3b82f6; }
-.mvv-card--valores::before{ background: #f59e0b; }
+.mvv-card--valores::before{ background: #f59e0b; } */
 
 .mvv-card:hover {
   transform: translateY(-5px);
@@ -856,7 +856,7 @@ video {
   position: relative;
   border-radius: var(--radius);
   overflow: hidden;
-  min-height: 280px;
+  min-height: 350px;
   cursor: pointer;
   transition: transform var(--transition);
   border: 1px solid var(--clr-border);
@@ -963,10 +963,10 @@ video {
 }
 
 .team-card {
-  background: var(--clr-card);
-  border: 1px solid var(--clr-border);
+  /* background: var(--clr-card); */
+  /* border: 1px solid var(--clr-border); */
   border-radius: var(--radius);
-  padding: 1.75rem 1.5rem;
+  padding: 1.75rem;
   text-align: center;
   transition: all var(--transition);
 }
@@ -977,7 +977,7 @@ video {
 }
 
 .team-card__avatar {
-  width: 80px; height: 80px;
+  width: 150px; height: 150px;
   border-radius: 50%;
   margin: 0 auto 1rem;
   overflow: hidden;
@@ -1183,8 +1183,14 @@ video {
   border-bottom: 1px solid var(--clr-border);
   transition: all var(--transition);
 }
-.timeline__item:last-child { border-bottom: none; }
-.timeline__item:hover { background: rgba(255,255,255,0.02); border-radius: var(--radius); }
+
+.timeline__item:last-child {
+  border-bottom: none;
+}
+
+.timeline__item:hover {
+  background: rgba(255,255,255,0.02);
+}
 
 .timeline__dot {
   position: absolute;
