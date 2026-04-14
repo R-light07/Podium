@@ -260,7 +260,7 @@ ul { list-style: none; }
   transform: translateY(-55%);
   font-family: var(--ff-display);
   font-size: clamp(12rem, 25vw, 22rem);
-  color: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.05);
   pointer-events: none;
   line-height: 1;
   user-select: none;
@@ -269,10 +269,11 @@ ul { list-style: none; }
 
 .hero__bg-img {
   position: absolute;
-  top: 50%;
+  width: 80%;
+  top: 43%;
   left: 50%;
   transform: translate(-50%,-50%);
-  opacity: .5;
+  opacity: .8;
   pointer-events: none;
   z-index: 0;
 }
