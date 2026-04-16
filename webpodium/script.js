@@ -365,31 +365,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ============================================================
-     11. HOVER PARALLAX — Cards das categorias
+     11. HOVER PARALLAX — Desactivado: os cat-cards usam agora
+         CSS flex-expand. O parallax conflituava com o efeito.
      ============================================================ */
-  document.querySelectorAll('.cat-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-      const rect   = card.getBoundingClientRect();
-      const centerX = rect.left + rect.width  / 2;
-      const centerY = rect.top  + rect.height / 2;
-      const deltaX  = (e.clientX - centerX) / (rect.width  / 2);
-      const deltaY  = (e.clientY - centerY) / (rect.height / 2);
-
-      card.style.transform = `
-        translateY(-6px)
-        rotateY(${deltaX * 4}deg)
-        rotateX(${-deltaY * 4}deg)
-      `;
-    });
-
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
-      card.style.transition = 'transform 0.5s ease';
-    });
-
-    card.addEventListener('mouseenter', () => {
-      card.style.transition = 'transform 0.1s ease';
-    });
-  });
+  // (removido para compatibilidade com o novo design de arch cards)
 
 });

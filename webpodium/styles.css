@@ -836,7 +836,7 @@ video {
 }
 
 /* ============================================================
-   CATEGORIES
+   CATEGORIES — Arch Cards com hover expand
    ============================================================ */
 .categories {
   background: var(--clr-bg);
@@ -847,95 +847,271 @@ video {
   margin-bottom: 3rem;
 }
 
+/* Grid com altura fixa para alinhar cards */
 .categories__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  height: 480px;
 }
 
+/* ---- CARD BASE ---- */
 .cat-card {
   position: relative;
-  border-radius: var(--radius);
+  flex: 1;
+  height: 100%;
+  border-radius: 200px 200px 40px 40px; /* topo arredondado = arch */
   overflow: hidden;
-  min-height: 350px;
   cursor: pointer;
-  transition: transform var(--transition);
-  border: 1px solid var(--clr-border);
-}
-.cat-card:hover { transform: translateY(-6px); }
-.cat-card:hover .cat-card__overlay { opacity: 0.7; }
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #111;
 
-.cat-card__bg {
+  /* transição de largura e sombra no hover */
+  transition:
+    flex 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.45s ease,
+    border-color 0.45s ease;
+
+  /* Prevenir parallax JS de interferir com o efeito */
+  will-change: flex;
+}
+
+/* Cartão expandido ao hover */
+.cat-card:hover {
+  flex: 2.4;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* Remoção do parallax JS para não conflituar com o flex-expand */
+.cat-card:hover {
+  transform: none !important;
+}
+
+/* ---- IMAGEM DO ATLETA ---- */
+.cat-card img {
   position: absolute;
-  top: 50%;
+  bottom: 0;
   left: 50%;
-  transform: translate(-50%,-60%);
-  font-size: 7rem;
-  opacity: 0.15;
+  transform: translateX(-50%);
+  width: auto;
+  height: 92%;
+  object-fit: contain;
+  object-position: bottom center;
+  z-index: 2;
   pointer-events: none;
-  z-index: 0;
-  transition: opacity var(--transition), transform var(--transition);
-}
-.cat-card:hover .cat-card__bg {
-  opacity: 0.25;
-  transform: translate(-50%,-65%) scale(1.1);
+  transition: height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.45s ease;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6));
 }
 
+.cat-card:hover img {
+  height: 96%;
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.8));
+}
+
+/* ---- OVERLAY GRADIENTE (fundo degrade cor + escuro na base) ---- */
 .cat-card__overlay {
   position: absolute;
   inset: 0;
-  opacity: 0.5;
-  transition: opacity var(--transition);
   z-index: 1;
+  transition: opacity 0.45s ease;
 }
 
-.cat-card--football  { background: linear-gradient(160deg, #1a2a14, #0d1a09); }
-.cat-card--football .cat-card__overlay  { background: linear-gradient(to top, rgba(76,175,80,0.15), transparent); }
+/* ---- FUNDO BG (decorativo, não usado mais) ---- */
+.cat-card__bg { display: none; }
 
-.cat-card--basketball { background: linear-gradient(160deg, #2a1f10, #1a1209); }
-.cat-card--basketball .cat-card__overlay { background: linear-gradient(to top, rgba(255,140,0,0.15), transparent); }
+/* ---- CORES POR MODALIDADE ---- */
+.cat-card--football {
+  background: linear-gradient(175deg, #0d1f09 0%, #0f0f0f 100%);
+}
+/* .cat-card--football .cat-card__overlay {
+  background: linear-gradient(to top,
+    rgba(76,175,80,0.55) 0%,
+    rgba(76,175,80,0.08) 45%,
+    transparent 70%);
+} */
 
-.cat-card--tennis    { background: linear-gradient(160deg, #102040, #091428); }
-.cat-card--tennis .cat-card__overlay    { background: linear-gradient(to top, rgba(33,150,243,0.15), transparent); }
+.cat-card--basketball {
+  background: linear-gradient(175deg, #1a1108 0%, #0f0f0f 100%);
+}
+/* .cat-card--basketball .cat-card__overlay {
+  background: linear-gradient(to top,
+    rgba(255,140,0,0.55) 0%,
+    rgba(255,140,0,0.08) 45%,
+    transparent 70%);
+} */
 
-.cat-card--athletics { background: linear-gradient(160deg, #2a1020, #1a0812); }
-.cat-card--athletics .cat-card__overlay { background: linear-gradient(to top, rgba(230,51,41,0.15), transparent); }
+.cat-card--tennis {
+  background: linear-gradient(175deg, #081428 0%, #0f0f0f 100%);
+}
+/* .cat-card--tennis .cat-card__overlay {
+  background: linear-gradient(to top,
+    rgba(33,150,243,0.55) 0%,
+    rgba(33,150,243,0.08) 45%,
+    transparent 70%);
+} */
 
+.cat-card--athletics {
+  background: linear-gradient(175deg, #1a0810 0%, #0f0f0f 100%);
+}
+/* .cat-card--athletics .cat-card__overlay {
+  background: linear-gradient(to top,
+    rgba(230,51,41,0.55) 0%,
+    rgba(230,51,41,0.08) 45%,
+    transparent 70%);
+} */
+
+/* ---- CONTEÚDO TEXTUAL ---- */
 .cat-card__content {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  padding: 1.5rem;
-  z-index: 2;
+  padding: 1.5rem 1.25rem;
+  z-index: 3;
+
+  /* Texto oculto por defeito — aparece no hover */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
+
 .cat-card__content h3 {
   font-family: var(--ff-condensed);
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 800;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: font-size 0.4s ease;
 }
+
+.cat-card:hover .cat-card__content h3 {
+  font-size: 1.55rem;
+}
+
+/* Descrição: invisível por defeito, desliza para cima no hover */
 .cat-card__content p {
-  font-size: 0.82rem;
-  color: var(--clr-muted);
-  line-height: 1.5;
-  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.55;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+    opacity 0.4s ease 0.15s;
+  margin: 0;
 }
+
+.cat-card:hover .cat-card__content p {
+  max-height: 120px;
+  opacity: 1;
+}
+
+/* Link */
 .cat-card__link {
   font-family: var(--ff-condensed);
   font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
+  font-size: 0.82rem;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--clr-accent);
-  transition: gap var(--transition);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.4s ease 0.25s,
+    transform 0.4s ease 0.25s,
+    color 0.2s ease;
+  white-space: nowrap;
 }
-.cat-card__link:hover { text-decoration: underline; }
+
+.cat-card:hover .cat-card__link {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cat-card__link:hover {
+  color: var(--clr-accent);
+}
+
+/* ---- NÚMERO DECORATIVO (indicador de posição) ---- */
+.cat-card__num {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  font-family: var(--ff-display);
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.25);
+  z-index: 3;
+  letter-spacing: 1px;
+  transition: color 0.35s ease;
+}
+.cat-card:hover .cat-card__num {
+  color: rgba(255,255,255,0.55);
+}
+
+/* ---- BADGE (tag de desporto no canto) ---- */
+.cat-card__badge {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  z-index: 3;
+  font-family: var(--ff-condensed);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.5);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s;
+}
+.cat-card:hover .cat-card__badge {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 1023px) {
+  .categories__grid {
+    height: 420px;
+  }
+}
+
+@media (max-width: 767px) {
+  .categories__grid {
+    flex-direction: column;
+    height: auto;
+    gap: 1rem;
+  }
+  .cat-card {
+    flex: none;
+    width: 100%;
+    height: 220px;
+    border-radius: 40px;
+  }
+  .cat-card:hover {
+    flex: none;
+    height: 340px;
+  }
+  .cat-card img {
+    height: 110%;
+    object-position: top center;
+  }
+}
 
 .sport__img-wrap img {
-  position: relative;
-  top: 400px;
-  width: 300px;
-  z-index: 100;
+  display: none;
 }
 
 /* ============================================================
