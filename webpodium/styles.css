@@ -1723,6 +1723,10 @@ video {
     gap: 2rem;
   }
   .footer__nav { grid-column: span 2; }
+
+  .hero__video {
+    display: none;
+  }
 }
 
 /* ============================================================
@@ -1776,6 +1780,10 @@ video {
   .footer__nav { grid-template-columns: repeat(2, 1fr); }
   .footer__social { justify-content: flex-start; }
 }
+
+.hero__video {
+    display: none;
+  }
 
 @media (max-width: 480px) {
   .team__grid { grid-template-columns: 1fr; }
