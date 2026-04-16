@@ -931,8 +931,11 @@ video {
 }
 .cat-card__link:hover { text-decoration: underline; }
 
-.cat-card img {
-  position: absolute;
+.sport__img-wrap img {
+  position: relative;
+  top: 400px;
+  width: 300px;
+  z-index: 100;
 }
 
 /* ============================================================
