@@ -1772,6 +1772,10 @@ video {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
+  
+  .hero__video {
+    display: none;
+  }
 
   .footer__inner {
     grid-template-columns: 1fr;
@@ -1781,12 +1785,13 @@ video {
   .footer__social { justify-content: flex-start; }
 }
 
-.hero__video {
-    display: none;
-  }
 
 @media (max-width: 480px) {
   .team__grid { grid-template-columns: 1fr; }
   .hero__cta  { flex-direction: column; }
   .hero__cta .btn { width: 100%; justify-content: center; }
+  
+.hero__video {
+    display: none;
+  }
 }
