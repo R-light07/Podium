@@ -9,28 +9,28 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================================
      1. HEADER — Two-tier: top bar colapsa, navbar fica sticky
      ============================================================ */
-  const header     = document.getElementById('header');
-  const topbar     = document.getElementById('headerTopbar');
-  const navbarEl   = document.getElementById('headerNavbar');
+  // const header     = document.getElementById('header');
+  // const topbar     = document.getElementById('headerTopbar');
+  // const navbarEl   = document.getElementById('headerNavbar');
 
   /** Altura total visível do header (usada para scroll offset e posição do menu mobile) */
-  const getHeaderHeight = () => header.getBoundingClientRect().height;
+  // const getHeaderHeight = () => header.getBoundingClientRect().height;
 
-  const handleScroll = () => {
-    const scrolled = window.scrollY > 55;
-    header.classList.toggle('scrolled', scrolled);
+  // const handleScroll = () => {
+  //   const scrolled = window.scrollY > 55;
+  //   header.classList.toggle('scrolled', scrolled);
 
     // Actualizar variável CSS com a top position para o menu mobile
-    const navbarHeight = navbarEl.getBoundingClientRect().height;
-    const topbarHeight = scrolled ? 0 : (topbar.getBoundingClientRect().height || 64);
-    document.documentElement.style.setProperty(
-      '--nav-top',
-      `${topbarHeight + navbarHeight}px`
-    );
-  };
+  //   const navbarHeight = navbarEl.getBoundingClientRect().height;
+  //   const topbarHeight = scrolled ? 0 : (topbar.getBoundingClientRect().height || 64);
+  //   document.documentElement.style.setProperty(
+  //     '--nav-top',
+  //     `${topbarHeight + navbarHeight}px`
+  //   );
+  // };
 
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  handleScroll(); // Executar na inicialização
+  // window.addEventListener('scroll', handleScroll, { passive: true });
+  // handleScroll(); // Executar na inicialização
 
   /* ============================================================
      2. MENU HAMBURGER (Mobile)
