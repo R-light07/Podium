@@ -6,37 +6,61 @@
   <title>Podium — Desporto é Para Todos</title>
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
   <!-- ========== HEADER / NAV — Two-tier ========== -->
-  <header class="header" id="header">   
+  <header class="header" id="header">
+
+    <!-- ① TOP BAR: logo principal + acções secundárias -->
+    <div class="header__topbar" id="headerTopbar">
+      <div class="container header__topbar-inner">
+
+        <a href="#inicio" class="header__logo" aria-label="Podium — Início">
+          <img src="./logomark.png" alt="Podium" width="108">
+        </a>
+
+        <div class="header__topbar-actions">
+          <a href="#clientes"  class="header__util-link">Comunidade</a>
+          <a href="#sobre-nos" class="header__util-link">Sobre Nós</a>
+          <a href="#inscricao" class="btn btn--primary btn--sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Newsletter
+          </a>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ② NAVBAR PRINCIPAL: links de navegação + logo compacto (só após scroll) -->
     <nav class="header__navbar" id="headerNavbar" role="navigation" aria-label="Menu principal">
       <div class="container header__navbar-inner">
 
         <!-- Logo compacto – aparece após scroll -->
         <a href="#inicio" class="header__navbar-logo" id="navbarLogo" tabindex="-1" aria-hidden="true">
-          <img src="./logomark.png" alt="Podium" width="120px">
+          <img src="./logomark.png" alt="Podium" width="76">
         </a>
 
         <!-- Links centrais -->
         <div class="nav" id="nav" role="menubar">
           <a href="#inicio"    class="nav__link" role="menuitem">Início</a>
-          <a href="#"    class="nav__link" role="menuitem">Desportos</a>
-          <a href="#"     class="nav__link" role="menuitem">Resultados</a>
-          <a href="#desportos" class="nav__link" role="menuitem">Mais</a>
+          <a href="#sobre"     class="nav__link" role="menuitem">Acerca</a>
+          <a href="#desportos" class="nav__link" role="menuitem">Desportos</a>
+          <a href="#noticias"  class="nav__link" role="menuitem">Notícias</a>
           <a href="#agenda"    class="nav__link" role="menuitem">Agenda</a>
-          <a href="#acerca"    class="nav__link" role="menuitem">Acerca</a>
         </div>
 
         <!-- Extremidade direita: CTA + hamburger -->
         <div class="header__navbar-end">
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Pesquisar desportos...">
-          </div>
+          <a href="#noticias" class="btn btn--primary btn--sm nav__cta" aria-label="Ver últimas notícias">
+            Últimas Notícias
+          </a>
+          <button class="hamburger" id="hamburger"
+                  aria-label="Abrir menu de navegação"
+                  aria-expanded="false"
+                  aria-controls="nav">
+            <span></span><span></span><span></span>
+          </button>
         </div>
 
       </div>

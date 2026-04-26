@@ -167,7 +167,59 @@ ul { list-style: none; }
   /* Evitar CLS: desativar pointer-events na área vazia após colapso */
 }
 
-/* -----------------------------------------------------------
+/* ----------------------------------------------------------------
+   ① TOP BAR
+   ---------------------------------------------------------------- */
+.header__topbar {
+  background: var(--clr-bg);
+  border-bottom: 1px solid var(--clr-border);
+  /* Transição de colapso suave */
+  will-change: max-height, opacity;
+  max-height: 80px;       /* valor generoso — o conteúdo real ~64px */
+  overflow: hidden;
+  opacity: 1;
+  transition:
+    max-height  0.42s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity     0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.28s ease;
+}
+
+/* Estado colapsado */
+.header.scrolled .header__topbar {
+  max-height: 0;
+  opacity: 0;
+  border-color: transparent;
+  pointer-events: none;
+}
+
+.header__topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.9rem;
+  padding-bottom: 0.9rem;
+}
+
+.header__topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+/* Links utilitários */
+.header__util-link {
+  font-family: var(--ff-condensed);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--clr-muted);
+  transition: color var(--transition);
+  white-space: nowrap;
+}
+.header__util-link:hover { color: var(--clr-text); }
+
+/* ----------------------------------------------------------------
    ② NAVBAR PRINCIPAL
    ---------------------------------------------------------------- */
 .header__navbar {
@@ -202,9 +254,9 @@ ul { list-style: none; }
   flex-shrink: 0;
   overflow: hidden;
   /* Fade + slide lateral */
-  opacity: 1;
-  max-width: 120PX;
-  /* pointer-events: none; */
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
   transition:
     opacity    0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.08s,
     max-width  0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -224,11 +276,15 @@ ul { list-style: none; }
 }
 
 /* CTA dentro da navbar (visível só após scroll em desktop) */
-/* .nav__cta {
-  opacity: 1;
+.nav__cta {
+  opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease 0.1s;
-} */
+}
+.header.scrolled .nav__cta {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 /* Botão pequeno */
 .btn--sm {
@@ -238,39 +294,21 @@ ul { list-style: none; }
   gap: 0.35rem;
 }
 
-.search-box {
-    position: relative;
-    width: 300px;
-  }
-
-  .search-box input {
-    /* width: 100%; */
-    padding: 10px 40px 10px;
-    border-radius: 15px;
-    border: 1px solid #ccc;
-    outline: none;
-    font-size: 14px;
-    transition: 0.3s;
-  }
-
-  .search-box input:focus {
-    border-color: var(--clr-accent);
-    box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
-  }
-
-  .search-box i {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #3d3d3d;
-    font-size: 16px;
-  }
-
 /* ----------------------------------------------------------------
    Logo principal (top bar)
    ---------------------------------------------------------------- */
-----------------------------------------------------------------
+.header__logo {
+  display: flex;
+  align-items: center;
+  font-family: var(--ff-display);
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  flex-shrink: 0;
+}
+.logo-pod { color: var(--clr-text); }
+.logo-ium { color: var(--clr-accent); }
+
+/* ----------------------------------------------------------------
    Links de navegação
    ---------------------------------------------------------------- */
 .nav {
