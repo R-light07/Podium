@@ -191,8 +191,7 @@ ul { list-style: none; }
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding-top: 0.55rem;
-  padding-bottom: 0.55rem;
+  padding: 10px 0;
 }
 
 /* Logo compacto (oculto inicialmente, visível após scroll) */
@@ -240,7 +239,6 @@ ul { list-style: none; }
 
 .search-box {
     position: relative;
-    width: 300px;
   }
 
   .search-box input {

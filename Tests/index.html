@@ -3,460 +3,247 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Podium — Plataforma desportiva moçambicana. Notícias, agenda, resultados e análises para fãs e atletas.">
+  <meta name="theme-color" content="#0f0f0f">
   <title>Podium — Desporto é Para Todos</title>
-  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Podium — Desporto é Para Todos">
+  <meta property="og:description" content="Plataforma desportiva moçambicana: notícias, agenda e análises.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_MZ">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- ========== HEADER / NAV — Two-tier ========== -->
+  <!-- Skip link (acessibilidade) -->
+  <a href="#inicio" class="skip-link">Saltar para o conteúdo</a>
+
+  <!-- ========== HEADER / NAVBAR ========== -->
   <header class="header" id="header">
-
-    <!-- ① TOP BAR: logo principal + acções secundárias -->
-    <div class="header__topbar" id="headerTopbar">
-      <div class="container header__topbar-inner">
-
-        <a href="#inicio" class="header__logo" aria-label="Podium — Início">
-          <img src="./logomark.png" alt="Podium" width="108">
-        </a>
-
-        <div class="header__topbar-actions">
-          <a href="#clientes"  class="header__util-link">Comunidade</a>
-          <a href="#sobre-nos" class="header__util-link">Sobre Nós</a>
-          <a href="#inscricao" class="btn btn--primary btn--sm">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Newsletter
-          </a>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ② NAVBAR PRINCIPAL: links de navegação + logo compacto (só após scroll) -->
     <nav class="header__navbar" id="headerNavbar" role="navigation" aria-label="Menu principal">
       <div class="container header__navbar-inner">
 
-        <!-- Logo compacto – aparece após scroll -->
-        <a href="#inicio" class="header__navbar-logo" id="navbarLogo" tabindex="-1" aria-hidden="true">
-          <img src="./logomark.png" alt="Podium" width="76">
-        </a>
+        <!-- ESQUERDA: Logo + Pesquisa -->
+        <div class="header__left">
+          <a href="#inicio" class="header__logo-link" aria-label="Podium — Início">
+            <span class="logo-pod">POD</span><span class="logo-ium">IUM</span>
+          </a>
 
-        <!-- Links centrais -->
-        <div class="nav" id="nav" role="menubar">
-          <a href="#inicio"    class="nav__link" role="menuitem">Início</a>
-          <a href="#sobre"     class="nav__link" role="menuitem">Acerca</a>
-          <a href="#desportos" class="nav__link" role="menuitem">Desportos</a>
-          <a href="#noticias"  class="nav__link" role="menuitem">Notícias</a>
-          <a href="#agenda"    class="nav__link" role="menuitem">Agenda</a>
+          <div class="search-box" role="search">
+            <svg class="search-box__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input
+              type="search"
+              id="searchInput"
+              placeholder="Pesquisar notícias, desportos..."
+              aria-label="Pesquisar notícias e desportos"
+              autocomplete="off"
+            />
+            <!-- Resultados live -->
+            <div class="search-results" id="searchResults" role="listbox" aria-label="Resultados da pesquisa"></div>
+          </div>
         </div>
 
-        <!-- Extremidade direita: CTA + hamburger -->
+        <!-- CENTRO/DIREITA: Links -->
+        <div class="nav" id="nav" role="menubar">
+          <a href="#inicio" class="nav__link active" role="menuitem" data-section="inicio">Início</a>
+
+          <!-- Dropdown Desportos -->
+          <div class="nav__dropdown" role="none">
+            <button class="nav__link nav__dropdown-toggle" role="menuitem" aria-haspopup="true" aria-expanded="false" data-dropdown="desportos">
+              Desportos <svg class="nav__chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="nav__dropdown-menu" role="menu" id="dropdown-desportos">
+              <a href="#desportos" role="menuitem" data-filter="futebol"><span>⚽</span>Futebol</a>
+              <a href="#desportos" role="menuitem" data-filter="basketball"><span>🏀</span>Basketball</a>
+              <a href="#desportos" role="menuitem" data-filter="tennis"><span>🎾</span>Ténis</a>
+              <a href="#desportos" role="menuitem" data-filter="atletismo"><span>🏃</span>Atletismo</a>
+              <a href="#desportos" role="menuitem" data-filter="motorsport"><span>🏎️</span>Motorsport</a>
+              <a href="#desportos" role="menuitem" data-filter="volei"><span>🏐</span>Voleibol</a>
+            </div>
+          </div>
+
+          <a href="#resultados" class="nav__link" role="menuitem" data-section="resultados">Resultados</a>
+          <a href="#assistir" class="nav__link" role="menuitem" data-section="assistir">Assistir</a>
+
+          <!-- Dropdown Mais -->
+          <div class="nav__dropdown" role="none">
+            <button class="nav__link nav__dropdown-toggle" role="menuitem" aria-haspopup="true" aria-expanded="false" data-dropdown="mais">
+              Mais <svg class="nav__chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="nav__dropdown-menu" role="menu" id="dropdown-mais">
+              <a href="#agenda" role="menuitem"><span>📅</span>Agenda</a>
+              <a href="#podcasts" role="menuitem"><span>🎙️</span>Podcasts</a>
+              <a href="#classificacoes" role="menuitem"><span>🏆</span>Classificações</a>
+              <a href="#favoritos" role="menuitem"><span>⭐</span>Favoritos</a>
+              <a href="#sobre-nos" role="menuitem"><span>ℹ️</span>Sobre Nós</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIREITA: Ações -->
         <div class="header__navbar-end">
-          <a href="#noticias" class="btn btn--primary btn--sm nav__cta" aria-label="Ver últimas notícias">
-            Últimas Notícias
-          </a>
-          <button class="hamburger" id="hamburger"
-                  aria-label="Abrir menu de navegação"
-                  aria-expanded="false"
-                  aria-controls="nav">
+          <button class="icon-btn" id="searchToggleMobile" aria-label="Abrir pesquisa">
+            <svg class="icon-btn__svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </button>
+          <button class="icon-btn" id="favoritesBtn" aria-label="Ver favoritos" title="Favoritos">
+            <svg class="icon-btn__svg icon-btn__heart" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="icon-btn__badge" id="favoritesCount" hidden>0</span>
+          </button>
+          <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav">
             <span></span><span></span><span></span>
           </button>
         </div>
 
       </div>
-    </nav>
 
+      <!-- Barra de pesquisa mobile (overlay) -->
+      <div class="mobile-search" id="mobileSearch" hidden>
+        <div class="container mobile-search__inner">
+          <svg class="mobile-search__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="search" id="mobileSearchInput" placeholder="Pesquisar..." aria-label="Pesquisar" />
+          <button class="icon-btn" id="searchCloseMobile" aria-label="Fechar pesquisa">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </nav>
   </header>
 
-  <!-- ========== HERO ========== -->
-  <section class="hero" id="inicio">
-    <div class="hero__bg-text">PODIUM</div>
-    <div class="hero__bg-img"><img src="./image.png" alt="Desporto"></div>
-    <div class="container hero__inner">        
-      <div class="hero__content">
-        <p class="hero__eyebrow">Vivemos o desporto com paixão</p>
-        <h1 class="hero__title">
-          Desporto é<br/>
-          Para <span class="accent">Todos</span>
-        </h1>
-        <p class="hero__sub">Para quem vibra como fã ou cresce como atleta!</p>
-        <p class="hero__desc">Trazemos até si as últimas notícias, atualizações e insights do mundo do desporto.</p>
-        <div class="hero__cta">
-          <a href="#noticias" class="btn btn--primary">Últimas Notícias</a>
-          <a href="#agenda" class="btn btn--outline">Agenda Desportiva</a>
-        </div>
-      </div>
-      <div class="hero__video-content">
-        <div class="hero__video">'
-            <video autoplay muted loop playsinline>
-                <source src="https://res.cloudinary.com/dpybwlkmu/video/upload/v1775802129/hero_vid_ppf1sz.mp4" type="video/mp4">
-                O seu navegador não suporta o elemento de vídeo.
-            </video>
-        </div>
-        <p class="hero__desc" id="vid__desc">
-            Trazemos até si as últimas notícias, atualizações e insights do mundo do desporto.
-        </p>
-      </div>
+  <!-- ========== HERO SLIDER ========== -->
+  <section class="hero-slider" id="inicio" aria-label="Destaques">
+    <div class="hero-slider__track" id="heroTrack" aria-live="polite">
+      <!-- Slides preenchidos por JS -->
     </div>
 
-    <!-- Stats bar -->
-    <div class="stats-bar">
-      <div class="container stats-bar__inner">
-        <div class="stat">
-          <span class="stat__number" data-target="15000">0</span>
-          <span class="stat__label">Atletas e fãs já fazem parte da nossa comunidade.</span>
-        </div>
-        <div class="stat__divider"></div>
-        <div class="stat">
-          <span class="stat__number" data-target="100">0</span>
-          <span class="stat__label">Subscritores ativos em serviços exclusivos</span>
-        </div>
-        <div class="stat__divider"></div>
-        <div class="stat">
-          <span class="stat__number" data-target="10">0</span>
-          <span class="stat__label">Anos de experiência no setor, com resultados comprovados e consistentes.</span>
-        </div>
-      </div>
-    </div>
+    <!-- Setas -->
+    <button class="hero-slider__arrow hero-slider__arrow--prev" id="heroPrev" aria-label="Destaque anterior">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="hero-slider__arrow hero-slider__arrow--next" id="heroNext" aria-label="Próximo destaque">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
+    <!-- Dots -->
+    <div class="hero-slider__dots" id="heroDots" role="tablist" aria-label="Escolher destaque"></div>
+
+    <!-- Barra de progresso autoplay -->
+    <div class="hero-slider__progress"><div class="hero-slider__progress-bar" id="heroProgress"></div></div>
   </section>
 
-  <!-- ========== TABS SECTION ========== -->
-  <section class="tabs-section">
-    <div class="container tabs-section__inner">
-      <div class="tab-btn active" data-tab="noticias-tab">
-        <span class="tab-btn__icon">📰</span>
-        <div>
-          <strong>Últimas Notícias Desportivas</strong>
-          <p>Fique por dentro de tudo o que acontece no mundo do desporto</p>
-        </div>
+  <!-- ========== STATS BAR ========== -->
+  <div class="stats-bar">
+    <div class="container stats-bar__inner">
+      <div class="stat">
+        <span class="stat__number" data-target="15000">0</span>
+        <span class="stat__label">Atletas e fãs na nossa comunidade</span>
       </div>
-      <div class="tab-btn" data-tab="agenda-tab">
-        <span class="tab-btn__icon">📅</span>
-        <div>
-          <strong>Agenda Desportiva</strong>
-          <p>Fique por dentro de tudo o que acontece no mundo do desporto</p>
-        </div>
+      <div class="stat__divider"></div>
+      <div class="stat">
+        <span class="stat__number" data-target="100">0</span>
+        <span class="stat__label">Subscritores activos em serviços exclusivos</span>
       </div>
-    </div>
-  </section>
-
-  <!-- ========== ABOUT / NOVA FORMA ========== -->
-  <section class="about" id="sobre">
-    <div class="container about__inner">
-      <div class="about__visual">
-        <img src="./kobe_bryant.png" alt="">
-        <div class="about__img-wrap">
-          <div class="about__player">
-            <div class="about__player-graphic">
-              <div class="player-silhouette">
-              </div>
-            </div>
-          </div>
-          <div class="about__badge">
-            <span>15K+</span>
-            <small>Comunidade</small>
-          </div>
-        </div>
-      </div>
-      <div class="about__content">
-        <h2 class="section-title">Uma Nova <br/><span class="accent">Forma de Viver</span><br/>o Desporto</h2>
-        <p>Acompanhe o universo desportivo com uma abordagem dinâmica, onde a informação chega até si com rapidez, clareza e relevância.</p>
-        <p>Reunimos notícias, destaques e análises que conectam os fãs aos momentos mais importantes, mantendo-o sempre atualizado.</p>
-        <p>Mais do que informar, criamos uma experiência envolvente para quem vive e respira desporto todos os dias.</p>
-        <a href="#noticias" class="btn btn--primary">Explorar Notícias</a>
+      <div class="stat__divider"></div>
+      <div class="stat">
+        <span class="stat__number" data-target="10">0</span>
+        <span class="stat__label">Anos de experiência comprovada no setor</span>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ========== SOBRE NÓS — HISTÓRIA, MISSÃO, VISÃO, VALORES ========== -->
-  <section class="sobre-nos" id="sobre-nos">
+  <!-- ========== NEWS — com filtros e paginação ========== -->
+  <section class="news" id="noticias">
     <div class="container">
-
-      <!-- Cabeçalho -->
-      <div class="sobre-nos__header reveal">
-        <p class="hero__eyebrow" style="justify-content:flex-start">Quem Somos</p>
-        <h2 class="section-title">Sobre <span class="accent">Nós</span></h2>
-        <p class="sobre-nos__intro">
-          Somos a Podium — a plataforma desportiva moçambicana que une fãs, atletas e profissionais
-          numa só comunidade apaixonada pelo desporto.
-        </p>
+      <div class="news__header">
+        <div>
+          <p class="hero__eyebrow" style="justify-content:flex-start">📰 Últimas actualizações</p>
+          <h2 class="section-title">Notícias<br/><span class="accent">Desportivas</span></h2>
+        </div>
+        <p>Mantenha-se informado com cobertura rápida, análises e insights dos principais eventos desportivos.</p>
       </div>
 
-      <!-- HISTÓRIA -->
-      <div class="historia reveal">
-        <div class="historia__label">
-          <span class="section-pill">📖 A Nossa História</span>
-        </div>
-        <div class="historia__grid">
-          <div class="historia__text">
-            <p>
-              A Podium nasceu em <strong>2015</strong> com uma visão simples mas ambiciosa: tornar o
-              desporto moçambicano mais acessível, mais visível e mais conectado com os seus adeptos.
-              Fundada por um grupo de jornalistas e entusiastas desportivos em Maputo, a plataforma
-              começou como um blogue de notícias e rapidamente cresceu para se tornar a referência
-              nacional no universo desportivo digital.
-            </p>
-            <p>
-              Ao longo de mais de <strong>10 anos</strong>, construímos uma comunidade de mais de
-              15 000 atletas e fãs, cobrimos centenas de eventos nacionais e internacionais, e
-              estabelecemos parcerias com as principais federações desportivas do país.
-            </p>
-            <p>
-              Hoje, a Podium é muito mais do que um portal de notícias — é um ecossistema completo
-              que celebra o talento, a dedicação e a paixão que definem o desporto moçambicano.
-            </p>
-          </div>
-          <div class="historia__milestones">
-            <div class="milestone">
-              <span class="milestone__year">2015</span>
-              <div class="milestone__content">
-                <strong>Fundação</strong>
-                <p>Lançamento do blogue desportivo em Maputo</p>
-              </div>
-            </div>
-            <div class="milestone">
-              <span class="milestone__year">2017</span>
-              <div class="milestone__content">
-                <strong>Expansão Digital</strong>
-                <p>Lançamento da plataforma web completa e app mobile</p>
-              </div>
-            </div>
-            <div class="milestone">
-              <span class="milestone__year">2020</span>
-              <div class="milestone__content">
-                <strong>5 000 Membros</strong>
-                <p>Comunidade ultrapassa os 5 000 subscritores activos</p>
-              </div>
-            </div>
-            <div class="milestone">
-              <span class="milestone__year">2023</span>
-              <div class="milestone__content">
-                <strong>Prémio Nacional</strong>
-                <p>Reconhecida como melhor plataforma desportiva digital</p>
-              </div>
-            </div>
-            <div class="milestone">
-              <span class="milestone__year">2026</span>
-              <div class="milestone__content">
-                <strong>15 000+ Membros</strong>
-                <p>Consolidação como líder do desporto digital em Moçambique</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Filtros por categoria -->
+      <div class="filters" id="newsFilters" role="tablist" aria-label="Filtrar por categoria">
+        <button class="filter-chip active" data-filter="all" role="tab" aria-selected="true">Todas</button>
+        <button class="filter-chip" data-filter="futebol" role="tab">⚽ Futebol</button>
+        <button class="filter-chip" data-filter="basketball" role="tab">🏀 Basketball</button>
+        <button class="filter-chip" data-filter="tennis" role="tab">🎾 Ténis</button>
+        <button class="filter-chip" data-filter="atletismo" role="tab">🏃 Atletismo</button>
+        <button class="filter-chip" data-filter="motorsport" role="tab">🏎️ Motorsport</button>
+        <button class="filter-chip" data-filter="volei" role="tab">🏐 Voleibol</button>
       </div>
 
-      <!-- MISSÃO, VISÃO, VALORES -->
-      <div class="mvv reveal">
-        <div class="mvv__grid">
-          <div class="mvv-card mvv-card--missao">
-            <div class="mvv-card__icon">🎯</div>
-            <h3>Missão</h3>
-            <p>
-              Democratizar o acesso à informação desportiva em Moçambique, conectando fãs, atletas
-              e profissionais através de conteúdos de qualidade, rápidos e relevantes — tornando
-              o desporto verdadeiramente para todos.
-            </p>
-          </div>
-          <div class="mvv-card mvv-card--visao">
-            <div class="mvv-card__icon">🔭</div>
-            <h3>Visão</h3>
-            <p>
-              Ser a maior e mais influente plataforma desportiva da África Austral até 2030,
-              reconhecida pela excelência editorial, inovação tecnológica e pelo impacto
-              positivo na cultura desportiva da região.
-            </p>
-          </div>
-          <div class="mvv-card mvv-card--valores">
-            <div class="mvv-card__icon">⚡</div>
-            <h3>Valores</h3>
-            <ul class="mvv-card__list">
-              <li><span class="mvv-bullet">—</span><strong>Paixão</strong> pelo desporto em tudo o que fazemos</li>
-              <li><span class="mvv-bullet">—</span><strong>Integridade</strong> e rigor jornalístico</li>
-              <li><span class="mvv-bullet">—</span><strong>Inclusão</strong> de atletas e fãs de todos os níveis</li>
-              <li><span class="mvv-bullet">—</span><strong>Inovação</strong> constante na forma de comunicar</li>
-              <li><span class="mvv-bullet">—</span><strong>Comunidade</strong> como o nosso maior activo</li>
-            </ul>
-          </div>
-        </div>
+      <!-- Grelha preenchida por JS -->
+      <div class="news__grid" id="newsGrid" aria-live="polite" aria-busy="false">
+        <!-- Cards injectados -->
       </div>
 
+      <!-- Estado vazio -->
+      <div class="news__empty" id="newsEmpty" hidden>
+        <p>Não foram encontradas notícias com os filtros actuais.</p>
+        <button class="btn btn--outline" id="clearFilters">Limpar filtros</button>
+      </div>
+
+      <!-- Load more -->
+      <div class="news__loadmore">
+        <button class="btn btn--outline" id="loadMoreBtn">Carregar mais notícias</button>
+      </div>
     </div>
   </section>
 
-  <!-- ========== CATEGORIAS (PORTFOLIO) ========== -->
+  <!-- ========== CATEGORIAS ========== -->
   <section class="categories" id="desportos">
     <div class="container">
       <div class="categories__header">
         <h2 class="section-title">Categorias <span class="accent">Desportivas</span><br/>em Destaque</h2>
       </div>
       <div class="categories__grid">
-
-        <!-- Futebol -->
-        <div class="cat-card cat-card--football">
-          <img src="baller.png" alt="Futebol">
+        <div class="cat-card cat-card--football" data-filter="futebol">
           <div class="cat-card__overlay"></div>
           <span class="cat-card__num">01</span>
-          <!-- <span class="cat-card__badge">⚽ Futebol</span> -->
           <div class="cat-card__content">
             <h3>Futebol</h3>
-            <p>Acompanhe jogos, estatísticas e destaques dos principais campeonatos. Descubra análises táticas e evolução dos atletas em tempo real.</p>
-            <a href="#" class="cat-card__link">Ver mais →</a>
+            <p>Jogos, estatísticas e destaques dos principais campeonatos. Análises tácticas e evolução dos atletas.</p>
+            <span class="cat-card__link">Ver notícias →</span>
           </div>
         </div>
-
-        <!-- Basketball -->
-        <div class="cat-card cat-card--basketball">
-          <img src="./basketball.png" alt="Basketball">
+        <div class="cat-card cat-card--basketball" data-filter="basketball">
           <div class="cat-card__overlay"></div>
           <span class="cat-card__num">02</span>
-          <!-- <span class="cat-card__badge">🏀 Basketball</span> -->
           <div class="cat-card__content">
             <h3>Basketball</h3>
-            <p>Acompanhe jogos, estatísticas e destaques dos principais campeonatos. Descubra análises táticas e evolução dos atletas em tempo real.</p>
-            <a href="#" class="cat-card__link">Ver mais →</a>
+            <p>Cobertura completa do basketball nacional e internacional, com análise de jogadores e equipas.</p>
+            <span class="cat-card__link">Ver notícias →</span>
           </div>
         </div>
-
-        <!-- Ténis -->
-        <div class="cat-card cat-card--tennis">
-          <img src="./racer.png" alt="GT3">
+        <div class="cat-card cat-card--tennis" data-filter="motorsport">
           <div class="cat-card__overlay"></div>
           <span class="cat-card__num">03</span>
-          <!-- <span class="cat-card__badge">🎾 Ténis</span> -->
           <div class="cat-card__content">
-            <h3>GT3/F1</h3>
-            <p>Acompanhe jogos, estatísticas e destaques dos principais campeonatos. Descubra análises táticas e evolução dos atletas em tempo real.</p>
-            <a href="#" class="cat-card__link">Ver mais →</a>
+            <h3>GT3 / F1</h3>
+            <p>Corridas, pilotos e tecnologia. Acompanhe o automobilismo de elite e os seus momentos decisivos.</p>
+            <span class="cat-card__link">Ver notícias →</span>
           </div>
         </div>
-
-        <!-- Atletismo -->
-        <div class="cat-card cat-card--athletics">
-          <img src="./athlet.png" alt="Atletismo">
+        <div class="cat-card cat-card--athletics" data-filter="atletismo">
           <div class="cat-card__overlay"></div>
           <span class="cat-card__num">04</span>
-          <!-- <span class="cat-card__badge">🏃 Atletismo</span> -->
           <div class="cat-card__content">
             <h3>Atletismo</h3>
-            <p>Acompanhe jogos, estatísticas e destaques dos principais campeonatos. Descubra análises táticas e evolução dos atletas em tempo real.</p>
-            <a href="#" class="cat-card__link">Ver mais →</a>
+            <p>Velocidade, resistência e recordes. Acompanhe os nossos atletas em competições nacionais e internacionais.</p>
+            <span class="cat-card__link">Ver notícias →</span>
           </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  </section>
-
-  <!-- ========== TEAM ========== -->
-  <section class="team" id="equipa">
-    <div class="container">
-      <div class="team__header">
-        <h2 class="section-title">Conheça a Nossa<br/><span class="accent">Equipe Professional</span></h2>
-        <p>Profissionais dedicados a trazer-lhe as melhores actualizações do mundo do desporto, com informação precisa, rápida e relevante.</p>
-      </div>
-      <div class="team__grid">
-        <div class="team-card">
-          <div class="team-card__avatar">
-            <div class="avatar-placeholder">CM</div>
-          </div>
-          <h3>Carlos Matsinhe</h3>
-          <span class="team-card__role">Gestor de Conteúdo</span>
-          <p>Coordena a publicação de conteúdos e garante que todas as actualizações chegam até si de forma clara e organizada.</p>
-        </div>
-        <div class="team-card">
-          <div class="team-card__avatar">
-            <div class="avatar-placeholder">XM</div>
-          </div>
-          <h3>Xavier Macuacua</h3>
-          <span class="team-card__role">Editor Desportivo</span>
-          <p>Especialista em análise de jogos e cobertura de eventos ao vivo, garantindo informação detalhada e actualizações em tempo real.</p>
-        </div>
-        <div class="team-card">
-          <div class="team-card__avatar">
-            <div class="avatar-placeholder">AC</div>
-          </div>
-          <h3>Ana Cossa</h3>
-          <span class="team-card__role">Jornalista Desportiva</span>
-          <p>Responsável pela cobertura de notícias e entrevistas, trazendo conteúdos exclusivos e histórias inspiradoras do desporto.</p>
-        </div>
-        <div class="team-card">
-          <div class="team-card__avatar">
-            <div class="avatar-placeholder">PA</div>
-          </div>
-          <h3>Pedro Antunes</h3>
-          <span class="team-card__role">Analista de Futebol</span>
-          <p>Focado em estatísticas, desempenho de equipas e previsões, oferecendo insights estratégicos sobre os principais campeonatos.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ========== NEWS ========== -->
-  <section class="news" id="noticias">
-    <div class="container">
-      <div class="news__header">
-        <div>
-          <h2 class="section-title">Últimas Actualizações<br/><span class="accent">Desportivas</span></h2>
-        </div>
-        <p>Mantenha-se informado com atualizações rápidas, cobertura dos principais eventos e insights que aproximam você do desporto como nunca antes.</p>
-      </div>
-      <div class="news__grid">
-        <article class="news-card">
-          <div class="news-card__img news-card__img--basketball">
-            <span class="news-card__emoji">🏀</span>
-          </div>
-          <div class="news-card__body">
-            <div class="news-card__meta">
-              <span class="tag tag--basketball">Basketball</span>
-              <time>25/03/2026</time>
-            </div>
-            <h3>Clássico decisivo termina em victória emocionante</h3>
-            <p>O confronto entre rivais foi marcado por grande intensidade do início ao fim, com uma das equipas a destacar-se e garantir uma vitória merecida, demonstrando superioridade e alto nível competitivo.</p>
-            <a href="#" class="news-card__link">Ler mais →</a>
-          </div>
-        </article>
-        <article class="news-card">
-          <div class="news-card__img news-card__img--football">
-            <span class="news-card__emoji">⚽</span>
-          </div>
-          <div class="news-card__body">
-            <div class="news-card__meta">
-              <span class="tag tag--football">Futebol</span>
-              <time>24/03/2026</time>
-            </div>
-            <h3>Jovem talentosa destaca-se na liga nacional</h3>
-            <p>Um novo nome começa a ganhar destaque após uma atuação impressionante. O atleta tem sido peça-chave e promete ser uma das revelações da temporada.</p>
-            <a href="#" class="news-card__link">Ler mais →</a>
-          </div>
-        </article>
-        <article class="news-card">
-          <div class="news-card__img news-card__img--tennis">
-            <span class="news-card__emoji">🎾</span>
-          </div>
-          <div class="news-card__body">
-            <div class="news-card__meta">
-              <span class="tag tag--tennis">Ténis</span>
-              <time>20/03/2026</time>
-            </div>
-            <h3>Preparação intensa para o próximo torneio internacional</h3>
-            <p>As equipas já estão focadas nos treinos e estratégias para representar o país no cenário internacional, com grandes expectativas dos adeptos.</p>
-            <a href="#" class="news-card__link">Ler mais →</a>
-          </div>
-        </article>
-      </div>
-
-      <!-- Pagination arrows -->
-      <div class="news__nav">
-        <button class="news-nav-btn news-nav-btn--prev" id="newsPrev" aria-label="Anterior">←</button>
-        <button class="news-nav-btn news-nav-btn--next" id="newsNext" aria-label="Próximo">→</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========== AGENDA / EVENTS ========== -->
+  <!-- ========== AGENDA ========== -->
   <section class="agenda" id="agenda">
     <div class="container">
       <div class="agenda__header">
@@ -469,7 +256,7 @@
           <div class="timeline__date">15 Abr 2026</div>
           <div class="timeline__content">
             <span class="tag tag--basketball">Basketball</span>
-            <h3>Campeonato Nacional de Basketball — Fase Final</h3>
+            <h3>Campeonato Nacional — Fase Final</h3>
             <p>Maputo · Pavilhão de Maxaquene</p>
           </div>
         </div>
@@ -487,8 +274,8 @@
           <div class="timeline__date">05 Mai 2026</div>
           <div class="timeline__content">
             <span class="tag tag--tennis">Ténis</span>
-            <h3>Torneio Internacional de Ténis — Open de Moçambique</h3>
-            <p>Maputo · Clube de Ténis de Maputo</p>
+            <h3>Open de Moçambique</h3>
+            <p>Maputo · Clube de Ténis</p>
           </div>
         </div>
         <div class="timeline__item">
@@ -504,45 +291,7 @@
     </div>
   </section>
 
-  <!-- ========== TESTIMONIALS / CLIENTS ========== -->
-  <section class="testimonials" id="clientes">
-    <div class="container">
-      <h2 class="section-title" style="text-align:center">O Que Dizem <span class="accent">os Nossos Clientes</span></h2>
-      <div class="testimonials__slider" id="testimonialSlider">
-        <div class="testimonial active">
-          <blockquote>"A Podium mudou a forma como acompanho o desporto moçambicano. Informação rápida, precisa e sempre atualizada."</blockquote>
-          <cite>— João Muianga, Adepto de Futebol</cite>
-        </div>
-        <div class="testimonial">
-          <blockquote>"Melhor plataforma desportiva do país. Os analistas são fantásticos e os conteúdos são sempre de qualidade."</blockquote>
-          <cite>— Fátima Chirindza, Atleta Nacional</cite>
-        </div>
-        <div class="testimonial">
-          <blockquote>"Graças à Podium nunca mais perco um jogo importante. A agenda desportiva é indispensável para mim."</blockquote>
-          <cite>— Manuel Sitoe, Treinador</cite>
-        </div>
-      </div>
-      <div class="testimonials__dots" id="testimonialDots">
-        <button class="dot active" data-index="0"></button>
-        <button class="dot" data-index="1"></button>
-        <button class="dot" data-index="2"></button>
-      </div>
-
-      <!-- Sponsors -->
-      <div class="sponsors">
-        <p class="sponsors__label">Parceiros & Patrocinadores</p>
-        <div class="sponsors__logos">
-          <div class="sponsor-logo">MCel</div>
-          <div class="sponsor-logo">BCI</div>
-          <div class="sponsor-logo">Vodacom</div>
-          <div class="sponsor-logo">Cervejas de Moçambique</div>
-          <div class="sponsor-logo">LAM</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========== NEWSLETTER / INSCRIÇÃO ========== -->
+  <!-- ========== NEWSLETTER ========== -->
   <section class="newsletter" id="inscricao">
     <div class="container newsletter__inner">
       <div class="newsletter__content">
@@ -573,38 +322,60 @@
   <footer class="footer">
     <div class="container footer__inner">
       <div class="footer__brand">
-        <a href="#inicio" class="header__logo">
+        <a href="#inicio" class="header__logo-link">
           <span class="logo-pod">POD</span><span class="logo-ium">IUM</span>
         </a>
         <p>info@podium.co.mz</p>
       </div>
-      <nav class="footer__nav">
+      <nav class="footer__nav" aria-label="Rodapé">
         <div class="footer__col">
-          <a href="#sobre">Acerca</a>
-          <a href="#sobre">Termos</a>
-          <a href="#sobre">Política</a>
+          <strong>Podium</strong>
+          <a href="#sobre-nos">Sobre nós</a>
+          <a href="#equipa">Equipa</a>
+          <a href="#">Termos</a>
+          <a href="#">Política de privacidade</a>
         </div>
         <div class="footer__col">
-          <a href="#desportos">Serviços</a>
-          <a href="#desportos">Desporto</a>
+          <strong>Desporto</strong>
+          <a href="#desportos">Categorias</a>
           <a href="#noticias">Notícias</a>
+          <a href="#agenda">Agenda</a>
+          <a href="#resultados">Resultados</a>
         </div>
         <div class="footer__col">
-          <a href="mailto:info@podium.co.mz">Contactos</a>
+          <strong>Contactos</strong>
           <a href="mailto:info@podium.co.mz">info@podium.co.mz</a>
+          <a href="tel:+258840000000">+258 84 000 0000</a>
+          <p>Maputo, Moçambique</p>
         </div>
       </nav>
       <div class="footer__social">
-        <a href="#" aria-label="YouTube" class="social-link">▶</a>
-        <a href="#" aria-label="Facebook" class="social-link">f</a>
-        <a href="#" aria-label="Instagram" class="social-link">◈</a>
-        <a href="#" aria-label="LinkedIn" class="social-link">in</a>
+        <a href="#" aria-label="YouTube" class="social-link"><i class="fab fa-youtube"></i></a>
+        <a href="#" aria-label="Facebook" class="social-link"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" aria-label="Instagram" class="social-link"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="LinkedIn" class="social-link"><i class="fab fa-linkedin-in"></i></a>
       </div>
     </div>
     <div class="footer__bottom">
       <p>© 2026 Podium. Todos os direitos reservados.</p>
     </div>
   </footer>
+
+  <!-- ========== MODAL NOTÍCIA INDIVIDUAL ========== -->
+  <div class="article-modal" id="articleModal" role="dialog" aria-modal="true" aria-labelledby="articleModalTitle" hidden>
+    <div class="article-modal__backdrop" data-close="modal"></div>
+    <article class="article-modal__panel" role="document">
+      <button class="article-modal__close" data-close="modal" aria-label="Fechar notícia">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+      <div class="article-modal__content" id="articleModalContent">
+        <!-- Conteúdo injectado por JS -->
+      </div>
+    </article>
+  </div>
+
+  <!-- ========== TOAST ========== -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="script.js"></script>
 </body>
