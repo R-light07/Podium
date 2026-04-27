@@ -91,6 +91,8 @@ const state = {
   editingId: null,
   editingCategoryId: null,
   uploadedFile: null,
+  // Galeria: {url} para imagens já existentes em Supabase, {file} para novos uploads ainda por subir
+  galleryItems: [],
 };
 
 // ===== Utils =====
@@ -504,6 +506,7 @@ $('#filterStatus')?.addEventListener('change', (e) => {
 function openArticleEditor(id = null) {
   state.editingId = id;
   state.uploadedFile = null;
+  state.galleryItems = [];
 
   const modal = $('#articleModal');
   const form = $('#articleForm');
@@ -532,6 +535,10 @@ function openArticleEditor(id = null) {
       $('#uploadPreview').hidden = false;
       $('#uploadContent').hidden = true;
     }
+    // Galeria existente
+    if (Array.isArray(n.imagens_galeria) && n.imagens_galeria.length > 0) {
+      state.galleryItems = n.imagens_galeria.map(url => ({ url, file: null }));
+    }
   } else {
     $('#articleModalTitle').textContent = 'Nova notícia';
     $('#articleId').value = '';
@@ -539,6 +546,7 @@ function openArticleEditor(id = null) {
     $('#articleData').value = formatDateTimeLocal(new Date().toISOString());
   }
 
+  renderGallery();
   modal.hidden = false;
 }
 
@@ -579,6 +587,20 @@ $('#articleForm')?.addEventListener('submit', async (e) => {
       imagem_url = null;
     }
 
+    // Upload das imagens novas da galeria + manter as já existentes
+    const imagens_galeria = [];
+    for (const item of state.galleryItems) {
+      if (item.url) {
+        // Imagem já existente — manter
+        imagens_galeria.push(item.url);
+      } else if (item.file) {
+        // Novo upload
+        btn.textContent = `A enviar ${imagens_galeria.length + 1}/${state.galleryItems.length}...`;
+        const url = await api.uploadImage(item.file);
+        imagens_galeria.push(url);
+      }
+    }
+
     const payload = {
       titulo,
       resumo,
@@ -589,6 +611,7 @@ $('#articleForm')?.addEventListener('submit', async (e) => {
       destaque: $('#articleDestaque').checked,
       publicada: $('#articlePublicada').checked,
       imagem_url,
+      imagens_galeria,
     };
 
     if (state.editingId) {
@@ -696,6 +719,87 @@ $('#uploadRemove')?.addEventListener('click', (e) => {
   uploadPreview.hidden = true;
   uploadContent.hidden = false;
   uploadPreviewImg.src = '';
+});
+
+// ============================================================
+// 7b. UPLOAD DE GALERIA (múltiplas imagens)
+// ============================================================
+const galleryZone    = $('#galleryZone');
+const galleryInput   = $('#articleGaleria');
+const galleryGrid    = $('#galleryGrid');
+
+galleryZone?.addEventListener('click', () => galleryInput.click());
+
+galleryZone?.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  galleryZone.classList.add('upload-zone--dragover');
+});
+galleryZone?.addEventListener('dragleave', () => {
+  galleryZone.classList.remove('upload-zone--dragover');
+});
+galleryZone?.addEventListener('drop', (e) => {
+  e.preventDefault();
+  galleryZone.classList.remove('upload-zone--dragover');
+  handleGalleryFiles(e.dataTransfer.files);
+});
+
+galleryInput?.addEventListener('change', (e) => {
+  handleGalleryFiles(e.target.files);
+  galleryInput.value = ''; // permitir re-seleccionar mesmo ficheiro
+});
+
+function handleGalleryFiles(fileList) {
+  const files = Array.from(fileList);
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) {
+      toast(`"${file.name}" não é uma imagem`, 'error');
+      continue;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast(`"${file.name}" excede 5 MB`, 'error');
+      continue;
+    }
+    // Adicionar ao state com preview local (data URL)
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      state.galleryItems.push({ file, url: null, preview: ev.target.result });
+      renderGallery();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function renderGallery() {
+  const grid = $('#galleryGrid');
+  if (!grid) return;
+  if (state.galleryItems.length === 0) {
+    grid.hidden = true;
+    grid.innerHTML = '';
+    return;
+  }
+  grid.hidden = false;
+  grid.innerHTML = state.galleryItems.map((item, idx) => {
+    const src = item.url || item.preview;
+    return `
+      <div class="gallery-thumb" data-index="${idx}">
+        <img src="${escapeHTML(src)}" alt="Imagem ${idx + 1}" />
+        <button type="button" class="gallery-thumb__remove" data-remove="${idx}" aria-label="Remover">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+        ${!item.url ? '<span class="gallery-thumb__badge">Novo</span>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+$('#galleryGrid')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-remove]');
+  if (btn) {
+    e.stopPropagation();
+    const idx = parseInt(btn.dataset.remove, 10);
+    state.galleryItems.splice(idx, 1);
+    renderGallery();
+  }
 });
 
 // ============================================================

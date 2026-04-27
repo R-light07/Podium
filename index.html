@@ -79,7 +79,6 @@
             <div class="nav__dropdown-menu" role="menu" id="dropdown-mais">
               <a href="#agenda" role="menuitem"><span>📅</span>Agenda</a>
               <a href="#podcasts" role="menuitem"><span>🎙️</span>Podcasts</a>
-              <a href="#eventos" role="menuitem"><span>🍹</span>Eventos</a>
               <a href="#classificacoes" role="menuitem"><span>🏆</span>Classificações</a>
               <a href="#favoritos" role="menuitem"><span>⭐</span>Favoritos</a>
               <a href="#sobre-nos" role="menuitem"><span>ℹ️</span>Sobre Nós</a>
@@ -359,21 +358,11 @@
     </div>
     <div class="footer__bottom">
       <p>© 2026 Podium. Todos os direitos reservados.</p>
+      <a href="admin/" class="admin-link" title="Admin" aria-label="Acesso administrativo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="16" r="1"/><rect width="18" height="12" x="3" y="10" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+      </a>
     </div>
   </footer>
-
-  <!-- ========== MODAL NOTÍCIA INDIVIDUAL ========== -->
-  <div class="article-modal" id="articleModal" role="dialog" aria-modal="true" aria-labelledby="articleModalTitle" hidden>
-    <div class="article-modal__backdrop" data-close="modal"></div>
-    <article class="article-modal__panel" role="document">
-      <button class="article-modal__close" data-close="modal" aria-label="Fechar notícia">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
-      <div class="article-modal__content" id="articleModalContent">
-        <!-- Conteúdo injectado por JS -->
-      </div>
-    </article>
-  </div>
 
   <!-- ========== TOAST ========== -->
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -381,6 +370,7 @@
   <!-- Supabase (opcional — se supabase-config.js estiver preenchido, o site usa dados reais) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
+  <script src="data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

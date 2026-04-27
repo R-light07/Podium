@@ -41,7 +41,8 @@ create table if not exists public.noticias (
   slug              text unique,                             -- gerado automaticamente
   resumo            text not null,
   conteudo          text[] not null default array[]::text[],  -- array de parágrafos
-  imagem_url        text,                                     -- URL da imagem no Storage
+  imagem_url        text,                                     -- URL da imagem de capa no Storage
+  imagens_galeria   text[] default array[]::text[],            -- URLs de imagens adicionais (galeria)
   categoria_id      bigint references public.categorias(id) on delete set null,
   autor             text not null default 'Equipa Podium',
   destaque          boolean default false,                    -- aparece no hero slider
@@ -250,6 +251,7 @@ select
   n.resumo,
   n.conteudo,
   n.imagem_url,
+  n.imagens_galeria,
   n.autor,
   n.destaque,
   n.data_publicacao,
@@ -307,6 +309,11 @@ begin
     select exists (
       select 1 from public.noticias
       where imagem_url like '%/' || obj.name
+         or exists (
+           select 1
+           from unnest(coalesce(imagens_galeria, array[]::text[])) as g
+           where g like '%/' || obj.name
+         )
     ) into is_used;
 
     if not is_used then
