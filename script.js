@@ -849,3 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initScrollReveal();
 });
+
+document.getElementById("dashboardBtn").addEventListener("click", function () {
+  window.location.href = "./admin/index.html";
+});
