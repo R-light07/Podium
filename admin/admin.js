@@ -87,9 +87,12 @@ const state = {
   role: null,
   noticias: [],
   categorias: [],
+  events: [],
   filters: { search: '', categoria: '', status: '' },
+  eventFilters: { search: '', categoria: '', status: '' },
   editingId: null,
   editingCategoryId: null,
+  editingEventId: null,
   uploadedFile: null,
   // Galeria: {url} para imagens já existentes em Supabase, {file} para novos uploads ainda por subir
   galleryItems: [],
@@ -212,6 +215,7 @@ async function showApp() {
   await Promise.all([
     loadCategorias(),
     loadNoticias(),
+    loadEventos(),
   ]);
 
   // Activar primeira view
@@ -336,6 +340,38 @@ const api = {
     if (!match) return;
     await sb.storage.from(bucket).remove([match[1]]);
   },
+
+  // ===== AGENDA / EVENTOS =====
+  async listEventos() {
+    const { data, error } = await sb.from('agenda_eventos')
+      .select('*, categorias(id, slug, nome, emoji, cor)')
+      .order('data_evento', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
+
+  async createEvento(payload) {
+    const { data, error } = await sb.from('agenda_eventos')
+      .insert(payload)
+      .select('*, categorias(id, slug, nome, emoji, cor)')
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateEvento(id, payload) {
+    const { data, error } = await sb.from('agenda_eventos')
+      .update(payload).eq('id', id)
+      .select('*, categorias(id, slug, nome, emoji, cor)')
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteEvento(id) {
+    const { error } = await sb.from('agenda_eventos').delete().eq('id', id);
+    if (error) throw error;
+  },
 };
 
 // ============================================================
@@ -346,6 +382,9 @@ async function loadCategorias() {
     state.categorias = await api.listCategorias();
     renderCategoriesSelects();
     renderCategoriesView();
+    if (typeof renderEventsCategoriesSelect === 'function') {
+      renderEventsCategoriesSelect();
+    }
     $('#countCategorias').textContent = state.categorias.length;
   } catch (err) {
     toast('Erro ao carregar categorias: ' + err.message, 'error');
@@ -991,6 +1030,298 @@ document.addEventListener('keydown', (e) => {
     $$('.modal:not([hidden])').forEach(m => m.hidden = true);
   }
 });
+
+// ============================================================
+// 11. VIEW: AGENDA (eventos desportivos)
+// ============================================================
+async function loadEventos() {
+  const loading = $('#eventsLoading');
+  if (loading) loading.style.display = 'flex';
+  try {
+    state.events = await api.listEventos();
+    const countEl = $('#countAgenda');
+    if (countEl) countEl.textContent = state.events.length;
+    renderEventsTable();
+  } catch (err) {
+    toast('Erro ao carregar eventos: ' + err.message, 'error');
+  } finally {
+    if (loading) loading.style.display = 'none';
+  }
+}
+
+function renderEventsCategoriesSelect() {
+  const sel = $('#filterEventCategoria');
+  if (sel) {
+    sel.innerHTML = '<option value="">Todas as categorias</option>' +
+      state.categorias.map(c => `<option value="${c.id}">${c.emoji} ${escapeHTML(c.nome)}</option>`).join('');
+  }
+  const editorSel = $('#eventCategoria');
+  if (editorSel) {
+    editorSel.innerHTML = '<option value="">— Escolher —</option>' +
+      state.categorias.map(c => `<option value="${c.id}">${c.emoji} ${escapeHTML(c.nome)}</option>`).join('');
+  }
+}
+
+function getFilteredEvents() {
+  const { search, categoria, status } = state.eventFilters;
+  const s = search.toLowerCase().trim();
+  return state.events.filter(e => {
+    if (s) {
+      const haystack = `${e.titulo} ${e.competicao || ''}`.toLowerCase();
+      if (!haystack.includes(s)) return false;
+    }
+    if (categoria && String(e.categoria_id) !== String(categoria)) return false;
+    if (status && e.status !== status) return false;
+    return true;
+  });
+}
+
+function statusLabel(s) {
+  return ({
+    agendado:  'Agendado',
+    em_curso:  'Em curso',
+    terminado: 'Terminado',
+    cancelado: 'Cancelado',
+    adiado:    'Adiado'
+  })[s] || s;
+}
+
+function statusClass(s) {
+  return ({
+    agendado:  'publicada',
+    em_curso:  'destaque',
+    terminado: 'rascunho',
+    cancelado: 'rascunho',
+    adiado:    'rascunho'
+  })[s] || 'rascunho';
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('pt-PT', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function renderEventsTable() {
+  const tbody = $('#eventsTbody');
+  const empty = $('#eventsEmpty');
+  if (!tbody) return;
+
+  const rows = getFilteredEvents();
+  if (rows.length === 0) {
+    tbody.innerHTML = '';
+    if (empty) empty.hidden = false;
+    return;
+  }
+  if (empty) empty.hidden = true;
+
+  tbody.innerHTML = rows.map(e => {
+    const cat = e.categorias || {};
+    const localCidade = [e.local, e.cidade].filter(Boolean).join(' · ') || '—';
+    const tituloFull = e.titulo + (e.competicao ? ` · ${e.competicao}` : '');
+    return `
+      <tr data-id="${e.id}" style="cursor:pointer">
+        <td><span class="table__titulo" title="${escapeHTML(tituloFull)}">${escapeHTML(e.titulo)}</span></td>
+        <td><span class="table__cat">${cat.emoji || ''} ${escapeHTML(cat.nome || '—')}</span></td>
+        <td>${formatDateTime(e.data_evento)}</td>
+        <td style="font-size:0.85rem;color:var(--clr-text-2)">${escapeHTML(localCidade)}</td>
+        <td><span class="table__status table__status--${statusClass(e.status)}">${statusLabel(e.status)}</span></td>
+        <td>
+          <div class="table__actions">
+            <button class="icon-btn" data-action="edit" title="Editar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            </button>
+            <button class="icon-btn" data-action="delete" title="Eliminar" style="color:#ef4444">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    const id = parseInt(tr.dataset.id, 10);
+    tr.addEventListener('click', (e) => {
+      const actionBtn = e.target.closest('[data-action]');
+      if (actionBtn) {
+        e.stopPropagation();
+        if (actionBtn.dataset.action === 'edit') openEventEditor(id);
+        if (actionBtn.dataset.action === 'delete') handleDeleteEvent(id);
+      } else {
+        openEventEditor(id);
+      }
+    });
+  });
+}
+
+// Filtros da agenda
+$('#eventSearch')?.addEventListener('input', (e) => {
+  state.eventFilters.search = e.target.value;
+  renderEventsTable();
+});
+$('#filterEventCategoria')?.addEventListener('change', (e) => {
+  state.eventFilters.categoria = e.target.value;
+  renderEventsTable();
+});
+$('#filterEventStatus')?.addEventListener('change', (e) => {
+  state.eventFilters.status = e.target.value;
+  renderEventsTable();
+});
+
+// ============================================================
+// 12. EDITOR DE EVENTOS
+// ============================================================
+function openEventEditor(id = null) {
+  state.editingEventId = id;
+  const modal = $('#eventModal');
+  const form = $('#eventForm');
+  form.reset();
+  form.classList.remove('submitted');
+  $('#eventFormError').textContent = '';
+  $('#deleteEventBtn').hidden = !id;
+  $('#eventResultadoWrap').hidden = true;
+
+  // Garantir select de categorias preenchido
+  renderEventsCategoriesSelect();
+
+  if (id) {
+    const e = state.events.find(x => x.id === id);
+    if (!e) return;
+    $('#eventModalTitle').textContent = 'Editar evento';
+    $('#eventId').value = e.id;
+    $('#eventTitulo').value = e.titulo || '';
+    $('#eventDescricao').value = e.descricao || '';
+    $('#eventCategoria').value = e.categoria_id || '';
+    $('#eventCompeticao').value = e.competicao || '';
+    $('#eventData').value = formatDateTimeLocal(e.data_evento);
+    $('#eventDuracao').value = e.duracao_min || 90;
+    $('#eventLocal').value = e.local || '';
+    $('#eventCidade').value = e.cidade || '';
+    $('#eventEquipaCasa').value = e.equipa_casa || '';
+    $('#eventEquipaFora').value = e.equipa_fora || '';
+    $('#eventStatus').value = e.status || 'agendado';
+    $('#eventDestaque').checked = !!e.destaque;
+    $('#eventPublicado').checked = !!e.publicado;
+    $('#eventResultadoCasa').value = e.resultado_casa ?? '';
+    $('#eventResultadoFora').value = e.resultado_fora ?? '';
+    if (e.status === 'terminado') $('#eventResultadoWrap').hidden = false;
+  } else {
+    $('#eventModalTitle').textContent = 'Novo evento';
+    $('#eventId').value = '';
+    $('#eventStatus').value = 'agendado';
+    $('#eventPublicado').checked = true;
+    $('#eventDuracao').value = 90;
+    // Default: amanhã às 16:00
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(16, 0, 0, 0);
+    $('#eventData').value = formatDateTimeLocal(tomorrow.toISOString());
+  }
+
+  modal.hidden = false;
+}
+
+$('#newEventBtn')?.addEventListener('click', () => openEventEditor());
+
+// Mostrar/esconder resultado conforme status
+$('#eventStatus')?.addEventListener('change', (e) => {
+  $('#eventResultadoWrap').hidden = e.target.value !== 'terminado';
+});
+
+$('#eventForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  e.target.classList.add('submitted');
+  const errEl = $('#eventFormError');
+  const btn = $('#saveEventBtn');
+  errEl.textContent = '';
+
+  const titulo = $('#eventTitulo').value.trim();
+  const categoria_id = $('#eventCategoria').value;
+  const data_evento_local = $('#eventData').value;
+
+  if (!titulo) {
+    errEl.textContent = 'Título é obrigatório.';
+    return;
+  }
+  if (!categoria_id) {
+    errEl.textContent = 'Escolha uma categoria.';
+    return;
+  }
+  if (!data_evento_local) {
+    errEl.textContent = 'Data e hora são obrigatórias.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  try {
+    const status = $('#eventStatus').value;
+    const payload = {
+      titulo,
+      descricao: $('#eventDescricao').value.trim() || null,
+      categoria_id: parseInt(categoria_id, 10),
+      competicao: $('#eventCompeticao').value.trim() || null,
+      data_evento: new Date(data_evento_local).toISOString(),
+      duracao_min: parseInt($('#eventDuracao').value, 10) || 90,
+      local: $('#eventLocal').value.trim() || null,
+      cidade: $('#eventCidade').value.trim() || null,
+      equipa_casa: $('#eventEquipaCasa').value.trim() || null,
+      equipa_fora: $('#eventEquipaFora').value.trim() || null,
+      status,
+      destaque: $('#eventDestaque').checked,
+      publicado: $('#eventPublicado').checked,
+      resultado_casa: status === 'terminado' && $('#eventResultadoCasa').value !== ''
+        ? parseInt($('#eventResultadoCasa').value, 10) : null,
+      resultado_fora: status === 'terminado' && $('#eventResultadoFora').value !== ''
+        ? parseInt($('#eventResultadoFora').value, 10) : null,
+    };
+
+    if (state.editingEventId) {
+      await api.updateEvento(state.editingEventId, payload);
+      toast('Evento actualizado.', 'success');
+    } else {
+      payload.criada_por = state.user.id;
+      await api.createEvento(payload);
+      toast('Evento criado.', 'success');
+    }
+
+    $('#eventModal').hidden = true;
+    state.editingEventId = null;
+    await loadEventos();
+  } catch (err) {
+    errEl.textContent = err.message || 'Erro ao guardar.';
+    toast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
+});
+
+$('#deleteEventBtn')?.addEventListener('click', () => {
+  if (state.editingEventId) handleDeleteEvent(state.editingEventId);
+});
+
+async function handleDeleteEvent(id) {
+  const e = state.events.find(x => x.id === id);
+  const ok = await confirmDialog(
+    'Eliminar evento',
+    `Eliminar "${e?.titulo || 'este evento'}"? Esta acção não pode ser desfeita.`
+  );
+  if (!ok) return;
+  try {
+    await api.deleteEvento(id);
+    toast('Evento eliminado.', 'success');
+    $('#eventModal').hidden = true;
+    state.editingEventId = null;
+    await loadEventos();
+  } catch (err) {
+    toast('Erro ao eliminar: ' + err.message, 'error');
+  }
+}
 
 // ============================================================
 // BOOT

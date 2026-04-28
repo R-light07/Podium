@@ -83,6 +83,18 @@ const api = sbClient ? {
       .limit(6);
     if (error) { console.error(error); return []; }
     return (data || []).map(normalizeFromSupabase);
+  },
+  async fetchEvents(limit = 8) {
+    // Só eventos futuros (>= agora)
+    const nowIso = new Date().toISOString();
+    const { data, error } = await sbClient
+      .from('agenda_publica')
+      .select('*')
+      .gte('data_evento', nowIso)
+      .order('data_evento', { ascending: true })
+      .limit(limit);
+    if (error) { console.error(error); return []; }
+    return data || [];
   }
 } : {
   // ===== MOCK API (fallback) =====
@@ -112,6 +124,30 @@ const api = sbClient ? {
       n.resumo.toLowerCase().includes(q) ||
       (CATEGORIES[n.categoria]?.name.toLowerCase().includes(q))
     ).slice(0, 6);
+  },
+
+  async fetchEvents() {
+    // Mock: 4 eventos hardcoded para demo (mesmos do HTML antigo)
+    const inDays = (d) => {
+      const date = new Date();
+      date.setDate(date.getDate() + d);
+      date.setHours(20, 0, 0, 0);
+      return date.toISOString();
+    };
+    return [
+      { id: 1, titulo: 'Campeonato Nacional — Fase Final', data_evento: inDays(15),
+        local: 'Pavilhão de Maxaquene', cidade: 'Maputo',
+        categoria_slug: 'basketball', categoria_nome: 'Basketball', categoria_emoji: '🏀' },
+      { id: 2, titulo: 'Liga Nacional — Jornada 28', data_evento: inDays(22),
+        local: 'Estádio da Machava', cidade: 'Maputo',
+        categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽' },
+      { id: 3, titulo: 'Open de Moçambique', data_evento: inDays(35),
+        local: 'Clube de Ténis', cidade: 'Maputo',
+        categoria_slug: 'tennis', categoria_nome: 'Ténis', categoria_emoji: '🎾' },
+      { id: 4, titulo: 'Final da Taça de Moçambique', data_evento: inDays(48),
+        local: 'Estádio Nacional do Zimpeto', cidade: 'Maputo',
+        categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽' },
+    ];
   }
 };
 
@@ -722,6 +758,80 @@ async function openArticleModal(id) {
 }
 
 /* ============================================================
+   8b. AGENDA DESPORTIVA
+   ============================================================ */
+async function initAgenda() {
+  const timeline = $('#agendaTimeline');
+  const loading  = $('#agendaLoading');
+  const empty    = $('#agendaEmpty');
+  if (!timeline) return;
+
+  try {
+    const events = await api.fetchEvents(8);
+
+    if (loading) loading.remove();
+
+    if (!events || events.length === 0) {
+      timeline.innerHTML = '';
+      if (empty) empty.hidden = false;
+      return;
+    }
+
+    timeline.innerHTML = events.map(e => {
+      const cat = e.categoria_slug || 'futebol';
+      const catName = e.categoria_nome || CATEGORIES[cat]?.name || 'Desporto';
+      const tagClass = CATEGORIES[cat]?.tagClass || '';
+      const dateObj = new Date(e.data_evento);
+      const dia = dateObj.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' });
+      const hora = dateObj.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+      const localCidade = [e.local, e.cidade].filter(Boolean).join(' · ') || '';
+
+      // Equipas vs (se houver)
+      const equipas = (e.equipa_casa && e.equipa_fora)
+        ? `<p class="timeline__teams"><strong>${escapeHTML(e.equipa_casa)}</strong> <span>vs</span> <strong>${escapeHTML(e.equipa_fora)}</strong></p>`
+        : '';
+
+      // Resultado se terminado
+      const resultado = (e.status === 'terminado' && e.resultado_casa != null && e.resultado_fora != null)
+        ? `<p class="timeline__result">Resultado final: <strong>${e.resultado_casa} – ${e.resultado_fora}</strong></p>`
+        : '';
+
+      // Status badge
+      const statusBadge = e.status && e.status !== 'agendado'
+        ? `<span class="timeline__status timeline__status--${e.status}">${{
+            em_curso: 'Em curso',
+            terminado: 'Terminado',
+            cancelado: 'Cancelado',
+            adiado: 'Adiado'
+          }[e.status] || ''}</span>`
+        : '';
+
+      return `
+        <div class="timeline__item">
+          <div class="timeline__dot"></div>
+          <div class="timeline__date">${dia}<br><span class="timeline__time">${hora}</span></div>
+          <div class="timeline__content">
+            <div class="timeline__tags">
+              <span class="tag ${tagClass}">${e.categoria_emoji || ''} ${escapeHTML(catName)}</span>
+              ${statusBadge}
+            </div>
+            <h3>${escapeHTML(e.titulo)}</h3>
+            ${equipas}
+            ${resultado}
+            ${localCidade ? `<p class="timeline__location">${escapeHTML(localCidade)}</p>` : ''}
+            ${e.competicao ? `<p class="timeline__competition">${escapeHTML(e.competicao)}</p>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Erro ao carregar agenda:', err);
+    if (loading) loading.remove();
+    if (empty) empty.hidden = false;
+  }
+}
+
+/* ============================================================
    9. STATS COUNTER
    ============================================================ */
 function initStatsCounter() {
@@ -844,12 +954,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initSearch();
   initHeroSlider();
   initNewsSection();
+  initAgenda();
   initStatsCounter();
   initNewsletter();
   initSmoothScroll();
   initScrollReveal();
-});
-
-document.getElementById("dashboardBtn").addEventListener("click", function () {
-  window.location.href = "./admin/index.html";
 });
