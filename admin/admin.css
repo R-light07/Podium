@@ -1199,3 +1199,100 @@ form.submitted .field select:invalid {
   z-index: 999;
 }
 .sidebar-backdrop.show { display: block; }
+
+/* ============================================================
+   RESULTADOS — Marcador + estatísticas
+   ============================================================ */
+.result-score-row {
+  display: grid;
+  grid-template-columns: 1fr 90px auto 90px 1fr;
+  gap: 0.65rem;
+  align-items: end;
+  background: var(--clr-bg-3);
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--clr-border);
+}
+.result-score-row__separator {
+  font-family: var(--ff-display);
+  font-size: 2rem;
+  color: var(--clr-muted);
+  padding-bottom: 0.5rem;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .result-score-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  .result-score-row__separator { display: none; }
+}
+
+/* Stats list */
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.stats-list:empty::before {
+  content: 'Sem eventos adicionados.';
+  display: block;
+  text-align: center;
+  padding: 0.75rem;
+  color: var(--clr-muted);
+  font-size: 0.85rem;
+  border: 1px dashed var(--clr-border);
+  border-radius: var(--radius);
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 80px 110px 110px 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  background: var(--clr-bg);
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--clr-border);
+}
+.stat-row input,
+.stat-row select {
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  background: var(--clr-bg-2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  color: var(--clr-text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+}
+.stat-row input:focus,
+.stat-row select:focus {
+  border-color: var(--clr-accent);
+}
+.stat-row__remove {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--clr-danger);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stat-row__remove:hover { background: var(--clr-danger); color: #fff; }
+
+.btn--sm {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 700px) {
+  .stat-row { grid-template-columns: 60px 1fr auto; gap: 0.4rem; }
+  .stat-row select:nth-of-type(2),
+  .stat-row input:nth-of-type(3) { grid-column: 1 / -1; }
+}

@@ -88,14 +88,19 @@ const state = {
   noticias: [],
   categorias: [],
   events: [],
+  results: [],
   filters: { search: '', categoria: '', status: '' },
   eventFilters: { search: '', categoria: '', status: '' },
+  resultFilters: { search: '', categoria: '', origem: '' },
   editingId: null,
   editingCategoryId: null,
   editingEventId: null,
+  editingResultId: null,
   uploadedFile: null,
   // Galeria: {url} para imagens já existentes em Supabase, {file} para novos uploads ainda por subir
   galleryItems: [],
+  // Estatísticas em edição
+  statsItems: [],
 };
 
 // ===== Utils =====
@@ -216,6 +221,7 @@ async function showApp() {
     loadCategorias(),
     loadNoticias(),
     loadEventos(),
+    loadResultados(),
   ]);
 
   // Activar primeira view
@@ -372,6 +378,42 @@ const api = {
     const { error } = await sb.from('agenda_eventos').delete().eq('id', id);
     if (error) throw error;
   },
+
+  // ===== RESULTADOS =====
+  async listResultados() {
+    // Lemos da view unificada que junta agenda + manuais
+    const { data, error } = await sb.from('resultados_publicos')
+      .select('*')
+      .order('data_evento', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createResultado(payload) {
+    const { data, error } = await sb.from('resultados')
+      .insert(payload).select().single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateResultado(id, payload) {
+    const { data, error } = await sb.from('resultados')
+      .update(payload).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  },
+
+  async getResultado(id) {
+    const { data, error } = await sb.from('resultados')
+      .select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteResultado(id) {
+    const { error } = await sb.from('resultados').delete().eq('id', id);
+    if (error) throw error;
+  },
 };
 
 // ============================================================
@@ -384,6 +426,9 @@ async function loadCategorias() {
     renderCategoriesView();
     if (typeof renderEventsCategoriesSelect === 'function') {
       renderEventsCategoriesSelect();
+    }
+    if (typeof renderResultsCategoriesSelect === 'function') {
+      renderResultsCategoriesSelect();
     }
     $('#countCategorias').textContent = state.categorias.length;
   } catch (err) {
@@ -1292,6 +1337,7 @@ $('#eventForm')?.addEventListener('submit', async (e) => {
     $('#eventModal').hidden = true;
     state.editingEventId = null;
     await loadEventos();
+    if (typeof loadResultados === 'function') await loadResultados();
   } catch (err) {
     errEl.textContent = err.message || 'Erro ao guardar.';
     toast('Erro: ' + err.message, 'error');
@@ -1318,6 +1364,315 @@ async function handleDeleteEvent(id) {
     $('#eventModal').hidden = true;
     state.editingEventId = null;
     await loadEventos();
+    if (typeof loadResultados === 'function') await loadResultados();
+  } catch (err) {
+    toast('Erro ao eliminar: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// 13. VIEW: RESULTADOS
+// ============================================================
+async function loadResultados() {
+  const loading = $('#resultsLoading');
+  if (loading) loading.style.display = 'flex';
+  try {
+    state.results = await api.listResultados();
+    const countEl = $('#countResultados');
+    if (countEl) countEl.textContent = state.results.length;
+    renderResultsTable();
+  } catch (err) {
+    // Não bloquear: pode não ter migração 004 corrida
+    console.warn('Resultados:', err.message);
+    state.results = [];
+    if ($('#countResultados')) $('#countResultados').textContent = '0';
+    renderResultsTable();
+  } finally {
+    if (loading) loading.style.display = 'none';
+  }
+}
+
+function renderResultsCategoriesSelect() {
+  const sel = $('#filterResultCategoria');
+  if (sel) {
+    sel.innerHTML = '<option value="">Todas as categorias</option>' +
+      state.categorias.map(c => `<option value="${c.slug}">${c.emoji} ${escapeHTML(c.nome)}</option>`).join('');
+  }
+  const editorSel = $('#resultCategoria');
+  if (editorSel) {
+    editorSel.innerHTML = '<option value="">— Escolher —</option>' +
+      state.categorias.map(c => `<option value="${c.id}">${c.emoji} ${escapeHTML(c.nome)}</option>`).join('');
+  }
+}
+
+function getFilteredResults() {
+  const { search, categoria, origem } = state.resultFilters;
+  const s = search.toLowerCase().trim();
+  return state.results.filter(r => {
+    if (s) {
+      const haystack = `${r.titulo} ${r.competicao || ''} ${r.equipa_casa || ''} ${r.equipa_fora || ''}`.toLowerCase();
+      if (!haystack.includes(s)) return false;
+    }
+    if (categoria && r.categoria_slug !== categoria) return false;
+    if (origem && r.origem !== origem) return false;
+    return true;
+  });
+}
+
+function renderResultsTable() {
+  const tbody = $('#resultsTbody');
+  const empty = $('#resultsEmpty');
+  if (!tbody) return;
+
+  const rows = getFilteredResults();
+  if (rows.length === 0) {
+    tbody.innerHTML = '';
+    if (empty) empty.hidden = false;
+    return;
+  }
+  if (empty) empty.hidden = true;
+
+  tbody.innerHTML = rows.map(r => {
+    const dataFmt = formatDate(r.data_evento);
+    const origemLabel = r.origem === 'agenda'
+      ? '<span class="table__status table__status--rascunho" title="Editar via Agenda">Da agenda</span>'
+      : '<span class="table__status table__status--publicada">Manual</span>';
+    const editable = r.origem === 'manual';
+    const actionBtn = editable
+      ? `<button class="icon-btn" data-action="edit" title="Editar">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+         </button>
+         <button class="icon-btn" data-action="delete" title="Eliminar" style="color:#ef4444">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+         </button>`
+      : `<span style="color:var(--clr-muted);font-size:0.8rem;font-style:italic">Editar na Agenda</span>`;
+
+    return `
+      <tr data-id="${r.id}" data-origem="${r.origem}" ${editable ? 'style="cursor:pointer"' : ''}>
+        <td>
+          <span class="table__titulo">${escapeHTML(r.equipa_casa)} <span style="color:var(--clr-muted)">vs</span> ${escapeHTML(r.equipa_fora)}</span>
+          ${r.competicao ? `<br><small style="color:var(--clr-muted)">${escapeHTML(r.competicao)}</small>` : ''}
+        </td>
+        <td><strong style="font-family:var(--ff-condensed);font-size:1.1rem">${r.resultado_casa} – ${r.resultado_fora}</strong></td>
+        <td><span class="table__cat">${r.categoria_emoji || ''} ${escapeHTML(r.categoria_nome || '—')}</span></td>
+        <td>${dataFmt}</td>
+        <td>${origemLabel}</td>
+        <td><div class="table__actions">${actionBtn}</div></td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    const id = parseInt(tr.dataset.id, 10);
+    const origem = tr.dataset.origem;
+    if (origem !== 'manual') return; // só manuais são editáveis aqui
+    tr.addEventListener('click', (e) => {
+      const actionBtn = e.target.closest('[data-action]');
+      if (actionBtn) {
+        e.stopPropagation();
+        if (actionBtn.dataset.action === 'edit') openResultEditor(id);
+        if (actionBtn.dataset.action === 'delete') handleDeleteResult(id);
+      } else {
+        openResultEditor(id);
+      }
+    });
+  });
+}
+
+// Filtros
+$('#resultSearch')?.addEventListener('input', (e) => {
+  state.resultFilters.search = e.target.value;
+  renderResultsTable();
+});
+$('#filterResultCategoria')?.addEventListener('change', (e) => {
+  state.resultFilters.categoria = e.target.value;
+  renderResultsTable();
+});
+$('#filterResultOrigem')?.addEventListener('change', (e) => {
+  state.resultFilters.origem = e.target.value;
+  renderResultsTable();
+});
+
+// ============================================================
+// 14. EDITOR DE RESULTADOS
+// ============================================================
+async function openResultEditor(id = null) {
+  state.editingResultId = id;
+  state.statsItems = [];
+
+  const modal = $('#resultModal');
+  const form = $('#resultForm');
+  form.reset();
+  form.classList.remove('submitted');
+  $('#resultFormError').textContent = '';
+  $('#deleteResultBtn').hidden = !id;
+
+  renderResultsCategoriesSelect();
+
+  if (id) {
+    // Editar — buscar dados completos da tabela `resultados` (não da view)
+    const r = await api.getResultado(id);
+    if (!r) {
+      toast('Resultado não encontrado', 'error');
+      return;
+    }
+    $('#resultModalTitle').textContent = 'Editar resultado';
+    $('#resultId').value = r.id;
+    $('#resultTitulo').value = r.titulo || '';
+    $('#resultCategoria').value = r.categoria_id || '';
+    $('#resultData').value = formatDateTimeLocal(r.data_evento);
+    $('#resultCompeticao').value = r.competicao || '';
+    $('#resultLocal').value = r.local || '';
+    $('#resultCidade').value = r.cidade || '';
+    $('#resultEquipaCasa').value = r.equipa_casa || '';
+    $('#resultEquipaFora').value = r.equipa_fora || '';
+    $('#resultMarcadorCasa').value = r.resultado_casa ?? '';
+    $('#resultMarcadorFora').value = r.resultado_fora ?? '';
+    $('#resultMVP').value = r.mvp || '';
+    $('#resultObservacoes').value = r.observacoes || '';
+    $('#resultDestaque').checked = !!r.destaque;
+    $('#resultPublicado').checked = !!r.publicado;
+    state.statsItems = Array.isArray(r.estatisticas) ? r.estatisticas : [];
+  } else {
+    $('#resultModalTitle').textContent = 'Novo resultado';
+    $('#resultId').value = '';
+    $('#resultPublicado').checked = true;
+    $('#resultData').value = formatDateTimeLocal(new Date().toISOString());
+  }
+
+  renderStatsList();
+  modal.hidden = false;
+}
+
+function renderStatsList() {
+  const list = $('#statsList');
+  if (!list) return;
+  list.innerHTML = state.statsItems.map((s, i) => `
+    <div class="stat-row" data-index="${i}">
+      <input type="number" placeholder="Min." value="${s.minuto ?? ''}" data-field="minuto" min="0" max="200" />
+      <select data-field="tipo">
+        <option value="golo"     ${s.tipo === 'golo' ? 'selected' : ''}>Golo</option>
+        <option value="periodo"  ${s.tipo === 'periodo' ? 'selected' : ''}>Período / Set</option>
+        <option value="cartao"   ${s.tipo === 'cartao' ? 'selected' : ''}>Cartão</option>
+        <option value="outro"    ${s.tipo === 'outro' ? 'selected' : ''}>Outro</option>
+      </select>
+      <select data-field="equipa">
+        <option value="casa" ${s.equipa === 'casa' ? 'selected' : ''}>Casa</option>
+        <option value="fora" ${s.equipa === 'fora' ? 'selected' : ''}>Fora</option>
+      </select>
+      <input type="text" placeholder="Jogador / detalhe" value="${escapeHTML(s.jogador || s.detalhe || '')}" data-field="jogador" maxlength="100" />
+      <button type="button" class="stat-row__remove" data-action="remove" aria-label="Remover">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+
+  // Bind change events para sincronizar state
+  list.querySelectorAll('.stat-row').forEach(row => {
+    const idx = parseInt(row.dataset.index, 10);
+    row.querySelectorAll('input, select').forEach(input => {
+      input.addEventListener('input', () => {
+        const field = input.dataset.field;
+        let val = input.value;
+        if (field === 'minuto') val = val ? parseInt(val, 10) : null;
+        state.statsItems[idx][field] = val;
+      });
+    });
+    row.querySelector('[data-action="remove"]')?.addEventListener('click', () => {
+      state.statsItems.splice(idx, 1);
+      renderStatsList();
+    });
+  });
+}
+
+$('#addStatBtn')?.addEventListener('click', () => {
+  state.statsItems.push({ minuto: null, tipo: 'golo', equipa: 'casa', jogador: '' });
+  renderStatsList();
+});
+
+$('#newResultBtn')?.addEventListener('click', () => openResultEditor());
+
+$('#resultForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  e.target.classList.add('submitted');
+  const errEl = $('#resultFormError');
+  const btn = $('#saveResultBtn');
+  errEl.textContent = '';
+
+  const titulo = $('#resultTitulo').value.trim();
+  const categoria_id = $('#resultCategoria').value;
+  const data = $('#resultData').value;
+  const equipa_casa = $('#resultEquipaCasa').value.trim();
+  const equipa_fora = $('#resultEquipaFora').value.trim();
+  const marcadorCasa = $('#resultMarcadorCasa').value;
+  const marcadorFora = $('#resultMarcadorFora').value;
+
+  if (!titulo) { errEl.textContent = 'Título é obrigatório.'; return; }
+  if (!categoria_id) { errEl.textContent = 'Escolha uma categoria.'; return; }
+  if (!data) { errEl.textContent = 'Data é obrigatória.'; return; }
+  if (!equipa_casa || !equipa_fora) { errEl.textContent = 'Equipas (casa e visitante) são obrigatórias.'; return; }
+  if (marcadorCasa === '' || marcadorFora === '') { errEl.textContent = 'Marcador é obrigatório.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  try {
+    const payload = {
+      titulo,
+      categoria_id: parseInt(categoria_id, 10),
+      data_evento: new Date(data).toISOString(),
+      competicao: $('#resultCompeticao').value.trim() || null,
+      local: $('#resultLocal').value.trim() || null,
+      cidade: $('#resultCidade').value.trim() || null,
+      equipa_casa,
+      equipa_fora,
+      resultado_casa: parseInt(marcadorCasa, 10),
+      resultado_fora: parseInt(marcadorFora, 10),
+      mvp: $('#resultMVP').value.trim() || null,
+      observacoes: $('#resultObservacoes').value.trim() || null,
+      estatisticas: state.statsItems.filter(s => s.minuto !== null && s.minuto !== ''),
+      destaque: $('#resultDestaque').checked,
+      publicado: $('#resultPublicado').checked,
+    };
+
+    if (state.editingResultId) {
+      await api.updateResultado(state.editingResultId, payload);
+      toast('Resultado actualizado.', 'success');
+    } else {
+      payload.criada_por = state.user.id;
+      await api.createResultado(payload);
+      toast('Resultado criado.', 'success');
+    }
+
+    $('#resultModal').hidden = true;
+    state.editingResultId = null;
+    await loadResultados();
+  } catch (err) {
+    errEl.textContent = err.message || 'Erro ao guardar.';
+    toast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
+});
+
+$('#deleteResultBtn')?.addEventListener('click', () => {
+  if (state.editingResultId) handleDeleteResult(state.editingResultId);
+});
+
+async function handleDeleteResult(id) {
+  const r = state.results.find(x => x.id === id && x.origem === 'manual');
+  const ok = await confirmDialog(
+    'Eliminar resultado',
+    `Eliminar "${r?.titulo || 'este resultado'}"? Esta acção não pode ser desfeita.`
+  );
+  if (!ok) return;
+  try {
+    await api.deleteResultado(id);
+    toast('Resultado eliminado.', 'success');
+    $('#resultModal').hidden = true;
+    state.editingResultId = null;
+    await loadResultados();
   } catch (err) {
     toast('Erro ao eliminar: ' + err.message, 'error');
   }

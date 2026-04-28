@@ -95,6 +95,15 @@ const api = sbClient ? {
       .limit(limit);
     if (error) { console.error(error); return []; }
     return data || [];
+  },
+  async fetchResults(limit = 6) {
+    const { data, error } = await sbClient
+      .from('resultados_publicos')
+      .select('*')
+      .order('data_evento', { ascending: false })
+      .limit(limit);
+    if (error) { console.error(error); return []; }
+    return data || [];
   }
 } : {
   // ===== MOCK API (fallback) =====
@@ -146,6 +155,48 @@ const api = sbClient ? {
         categoria_slug: 'tennis', categoria_nome: 'Ténis', categoria_emoji: '🎾' },
       { id: 4, titulo: 'Final da Taça de Moçambique', data_evento: inDays(48),
         local: 'Estádio Nacional do Zimpeto', cidade: 'Maputo',
+        categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽' },
+    ];
+  },
+
+  async fetchResults() {
+    const daysAgo = (d) => {
+      const date = new Date();
+      date.setDate(date.getDate() - d);
+      return date.toISOString();
+    };
+    return [
+      { origem: 'manual', id: 1,
+        titulo: 'Costa do Sol vs Liga Muçulmana',
+        equipa_casa: 'Costa do Sol', equipa_fora: 'Liga Muçulmana',
+        resultado_casa: 2, resultado_fora: 1,
+        data_evento: daysAgo(5),
+        competicao: 'Liga Nacional - Jornada 27',
+        mvp: 'Geny Catamo',
+        observacoes: 'Vitória sofrida do Costa do Sol num jogo equilibrado.',
+        estatisticas: [
+          { minuto: 23, tipo: 'golo', equipa: 'casa', jogador: 'Geny Catamo' },
+          { minuto: 56, tipo: 'golo', equipa: 'fora', jogador: 'Telinho' },
+          { minuto: 78, tipo: 'golo', equipa: 'casa', jogador: 'Reginaldo' }
+        ],
+        categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽' },
+      { origem: 'manual', id: 2,
+        titulo: 'Maxaquene vs Ferroviário',
+        equipa_casa: 'Maxaquene', equipa_fora: 'Ferroviário',
+        resultado_casa: 78, resultado_fora: 72,
+        data_evento: daysAgo(12),
+        competicao: 'Campeonato Nacional 2025/26',
+        mvp: 'Custódio Muchate',
+        observacoes: 'Triplos decisivos no último período garantiram a vitória.',
+        estatisticas: [],
+        categoria_slug: 'basketball', categoria_nome: 'Basketball', categoria_emoji: '🏀' },
+      { origem: 'manual', id: 3,
+        titulo: 'Selecção vs Tanzânia',
+        equipa_casa: 'Moçambique', equipa_fora: 'Tanzânia',
+        resultado_casa: 1, resultado_fora: 1,
+        data_evento: daysAgo(20),
+        competicao: 'Qualificação Africana',
+        mvp: null, observacoes: null, estatisticas: [],
         categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽' },
     ];
   }
@@ -832,6 +883,62 @@ async function initAgenda() {
 }
 
 /* ============================================================
+   8c. RESULTADOS — Cards resumidos no index
+   ============================================================ */
+async function initResultados() {
+  const grid    = $('#resultadosGrid');
+  const loading = $('#resultadosLoading');
+  const empty   = $('#resultadosEmpty');
+  if (!grid) return;
+
+  try {
+    const results = await api.fetchResults(6);
+
+    if (loading) loading.remove();
+
+    if (!results || results.length === 0) {
+      grid.innerHTML = '';
+      if (empty) empty.hidden = false;
+      return;
+    }
+
+    grid.innerHTML = results.map(r => {
+      const cat = r.categoria_slug || 'futebol';
+      const tagClass = CATEGORIES[cat]?.tagClass || '';
+      const dateObj = new Date(r.data_evento);
+      const dia = dateObj.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
+      const winner = r.resultado_casa > r.resultado_fora ? 'casa'
+        : r.resultado_casa < r.resultado_fora ? 'fora' : 'draw';
+
+      return `
+        <article class="result-card" data-categoria="${cat}">
+          <div class="result-card__head">
+            <span class="tag ${tagClass}">${r.categoria_emoji || ''} ${escapeHTML(r.categoria_nome || '')}</span>
+            <time class="result-card__date">${dia}</time>
+          </div>
+          ${r.competicao ? `<p class="result-card__comp">${escapeHTML(r.competicao)}</p>` : ''}
+          <div class="result-card__score">
+            <div class="result-card__team result-card__team--${winner === 'casa' ? 'winner' : winner === 'fora' ? 'loser' : ''}">
+              <span class="result-card__team-name">${escapeHTML(r.equipa_casa)}</span>
+              <span class="result-card__team-score">${r.resultado_casa}</span>
+            </div>
+            <div class="result-card__team result-card__team--${winner === 'fora' ? 'winner' : winner === 'casa' ? 'loser' : ''}">
+              <span class="result-card__team-name">${escapeHTML(r.equipa_fora)}</span>
+              <span class="result-card__team-score">${r.resultado_fora}</span>
+            </div>
+          </div>
+          ${r.mvp ? `<div class="result-card__mvp">⭐ MVP: <strong>${escapeHTML(r.mvp)}</strong></div>` : ''}
+        </article>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Erro ao carregar resultados:', err);
+    if (loading) loading.remove();
+    if (empty) empty.hidden = false;
+  }
+}
+
+/* ============================================================
    9. STATS COUNTER
    ============================================================ */
 function initStatsCounter() {
@@ -955,12 +1062,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeroSlider();
   initNewsSection();
   initAgenda();
+  initResultados();
   initStatsCounter();
   initNewsletter();
   initSmoothScroll();
   initScrollReveal();
-});
-
-document.getElementById("dashboardBtn").addEventListener("click", function () {
-  window.location.href = "./admin/index.html";
 });
