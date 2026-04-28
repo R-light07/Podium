@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Podium — Dashboard Admin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,900&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- =============== LOADING SCREEN (inicial, escondido após auth check) =============== -->
+  <div class="boot-screen" id="bootScreen">
+    <div class="boot-logo">
+      <span class="logo-pod">POD</span><span class="logo-ium">IUM</span>
+    </div>
+    <div class="boot-spinner"></div>
+    <p>A verificar sessão...</p>
+  </div>
+
+  <!-- =============== LOGIN VIEW =============== -->
+  <section class="login-view" id="loginView" hidden>
+    <div class="login-bg"></div>
+    <div class="login-card">
+      <header class="login-header">
+        <a href="../index.html" class="login-logo">
+          <span class="logo-pod">POD</span><span class="logo-ium">IUM</span>
+        </a>
+        <p class="login-subtitle">Dashboard Administrativo</p>
+      </header>
+
+      <form class="login-form" id="loginForm" novalidate>
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input
+            type="email"
+            id="loginEmail"
+            autocomplete="email"
+            required
+            placeholder="admin@podium.co.mz"
+          />
+        </div>
+        <div class="field">
+          <label for="loginPassword">Palavra-passe</label>
+          <input
+            type="password"
+            id="loginPassword"
+            autocomplete="current-password"
+            required
+            minlength="6"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <p class="login-error" id="loginError" aria-live="polite"></p>
+
+        <button type="submit" class="btn btn--primary btn--block" id="loginSubmit">
+          <span>Entrar</span>
+        </button>
+      </form>
+
+      <footer class="login-footer">
+        <p>Apenas utilizadores autorizados.</p>
+        <a href="../index.html">← Voltar ao site</a>
+      </footer>
+    </div>
+  </section>
+
+  <!-- =============== DASHBOARD APP =============== -->
+  <div class="app" id="app" hidden>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__logo">
+        <a href="../index.html" title="Ver site público">
+          <span class="logo-pod">POD</span><span class="logo-ium">IUM</span>
+        </a>
+        <span class="sidebar__badge">ADMIN</span>
+      </div>
+
+      <nav class="sidebar__nav">
+        <button class="sidebar__link active" data-view="noticias">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6z"/></svg>
+          <span>Notícias</span>
+          <span class="sidebar__count" id="countNoticias">–</span>
+        </button>
+        <button class="sidebar__link" data-view="categorias">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h.01"/><path d="M21 12V5a2 2 0 0 0-2-2h-7L3 12l9 9 9-9z"/></svg>
+          <span>Categorias</span>
+          <span class="sidebar__count" id="countCategorias">–</span>
+        </button>
+        <button class="sidebar__link" data-view="destaques">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span>Destaques</span>
+        </button>
+        <button class="sidebar__link" data-view="agenda">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Agenda</span>
+          <span class="sidebar__count" id="countAgenda">–</span>
+        </button>
+        <button class="sidebar__link" data-view="resultados">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55.47.98.97 1.21C12.15 18.75 13 20.24 13 22"/><path d="M14 14.66V17c0 .55-.47.98-.97 1.21C11.85 18.75 11 20.24 11 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          <span>Resultados</span>
+          <span class="sidebar__count" id="countResultados">–</span>
+        </button>
+        <button class="sidebar__link" data-view="classificacoes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <span>Classificações</span>
+          <span class="sidebar__count" id="countCompeticoes">–</span>
+        </button>
+      </nav>
+
+      <div class="sidebar__footer">
+        <div class="user-card">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <div class="user-info">
+            <span class="user-email" id="userEmail">—</span>
+            <span class="user-role" id="userRole">—</span>
+          </div>
+        </div>
+        <button class="btn btn--ghost btn--block" id="logoutBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+          Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- Mobile toggle sidebar -->
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+
+      <!-- ============ VIEW: NOTÍCIAS ============ -->
+      <section class="view view--active" data-view="noticias">
+        <header class="view__header">
+          <div>
+            <h1>Notícias</h1>
+            <p>Gerir todas as publicações do portal</p>
+          </div>
+          <button class="btn btn--primary" id="newArticleBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Nova notícia
+          </button>
+        </header>
+
+        <!-- Toolbar: pesquisa + filtros -->
+        <div class="toolbar">
+          <div class="toolbar__search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="search" id="articleSearch" placeholder="Pesquisar por título..." />
+          </div>
+          <select id="filterCategoria" class="select">
+            <option value="">Todas as categorias</option>
+          </select>
+          <select id="filterStatus" class="select">
+            <option value="">Todos os estados</option>
+            <option value="publicada">Publicadas</option>
+            <option value="rascunho">Rascunhos</option>
+            <option value="destaque">Destaques</option>
+          </select>
+        </div>
+
+        <!-- Tabela de notícias -->
+        <div class="table-wrap">
+          <table class="table" id="articlesTable">
+            <thead>
+              <tr>
+                <th class="th-img"></th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Estado</th>
+                <th>Data</th>
+                <th>Views</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="articlesTbody">
+              <!-- preenchido por JS -->
+            </tbody>
+          </table>
+          <div class="table-empty" id="articlesEmpty" hidden>
+            <p>Nenhuma notícia encontrada.</p>
+          </div>
+          <div class="table-loading" id="articlesLoading">
+            <div class="spinner"></div>
+            <p>A carregar...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ VIEW: CATEGORIAS ============ -->
+      <section class="view" data-view="categorias">
+        <header class="view__header">
+          <div>
+            <h1>Categorias</h1>
+            <p>Gerir categorias desportivas</p>
+          </div>
+          <button class="btn btn--primary" id="newCategoryBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Nova categoria
+          </button>
+        </header>
+
+        <div class="categories-grid" id="categoriesGrid">
+          <!-- preenchido por JS -->
+        </div>
+      </section>
+
+      <!-- ============ VIEW: DESTAQUES ============ -->
+      <section class="view" data-view="destaques">
+        <header class="view__header">
+          <div>
+            <h1>Destaques do Hero</h1>
+            <p>Notícias que aparecem no carrossel principal (máx. 5)</p>
+          </div>
+        </header>
+
+        <div class="destaques-wrap" id="destaquesWrap">
+          <!-- preenchido por JS -->
+        </div>
+      </section>
+
+      <!-- ============ VIEW: AGENDA ============ -->
+      <section class="view" data-view="agenda">
+        <header class="view__header">
+          <div>
+            <h1>Agenda Desportiva</h1>
+            <p>Eventos, jogos e torneios</p>
+          </div>
+          <button class="btn btn--primary" id="newEventBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Novo evento
+          </button>
+        </header>
+
+        <div class="toolbar">
+          <div class="toolbar__search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="search" id="eventSearch" placeholder="Pesquisar por título ou competição..." />
+          </div>
+          <select id="filterEventCategoria" class="select">
+            <option value="">Todas as categorias</option>
+          </select>
+          <select id="filterEventStatus" class="select">
+            <option value="">Todos os estados</option>
+            <option value="agendado">Agendados</option>
+            <option value="em_curso">Em curso</option>
+            <option value="terminado">Terminados</option>
+            <option value="cancelado">Cancelados</option>
+            <option value="adiado">Adiados</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" id="eventsTable">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Data / Hora</th>
+                <th>Local</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="eventsTbody"></tbody>
+          </table>
+          <div class="table-empty" id="eventsEmpty" hidden>
+            <p>Nenhum evento encontrado.</p>
+          </div>
+          <div class="table-loading" id="eventsLoading">
+            <div class="spinner"></div>
+            <p>A carregar...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ VIEW: RESULTADOS ============ -->
+      <section class="view" data-view="resultados">
+        <header class="view__header">
+          <div>
+            <h1>Resultados</h1>
+            <p>Marcadores e estatísticas dos jogos</p>
+          </div>
+          <button class="btn btn--primary" id="newResultBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Novo resultado
+          </button>
+        </header>
+
+        <div class="toolbar">
+          <div class="toolbar__search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="search" id="resultSearch" placeholder="Pesquisar por equipa, competição..." />
+          </div>
+          <select id="filterResultCategoria" class="select">
+            <option value="">Todas as categorias</option>
+          </select>
+          <select id="filterResultOrigem" class="select">
+            <option value="">Todas as origens</option>
+            <option value="agenda">Da agenda</option>
+            <option value="manual">Manuais</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" id="resultsTable">
+            <thead>
+              <tr>
+                <th>Jogo</th>
+                <th>Marcador</th>
+                <th>Categoria</th>
+                <th>Data</th>
+                <th>Origem</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="resultsTbody"></tbody>
+          </table>
+          <div class="table-empty" id="resultsEmpty" hidden>
+            <p>Nenhum resultado encontrado.</p>
+          </div>
+          <div class="table-loading" id="resultsLoading">
+            <div class="spinner"></div>
+            <p>A carregar...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ VIEW: CLASSIFICAÇÕES ============ -->
+      <section class="view" data-view="classificacoes">
+        <header class="view__header">
+          <div>
+            <h1>Classificações</h1>
+            <p>Tabelas e rankings calculados automaticamente</p>
+          </div>
+          <button class="btn btn--primary" id="newCompeticaoBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Nova competição
+          </button>
+        </header>
+
+        <div class="competicoes-wrap" id="competicoesWrap">
+          <div class="table-loading" id="competicoesLoading">
+            <div class="spinner"></div>
+            <p>A carregar...</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- =============== MODAL: Editor de notícia =============== -->
+  <div class="modal" id="articleModal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel modal__panel--lg" role="dialog" aria-modal="true" aria-labelledby="articleModalTitle">
+      <header class="modal__header">
+        <h2 id="articleModalTitle">Nova notícia</h2>
+        <button class="icon-btn" data-close aria-label="Fechar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+
+      <form class="modal__body" id="articleForm" novalidate>
+        <input type="hidden" id="articleId" />
+
+        <div class="field">
+          <label for="articleTitulo">Título <span class="req">*</span></label>
+          <input type="text" id="articleTitulo" required maxlength="200" />
+        </div>
+
+        <div class="field">
+          <label for="articleResumo">Resumo <span class="req">*</span></label>
+          <textarea id="articleResumo" rows="3" required maxlength="500"></textarea>
+          <span class="field-hint">Texto curto que aparece no card e no hero (máx. 500 caracteres)</span>
+        </div>
+
+        <div class="field">
+          <label for="articleConteudo">Conteúdo completo <span class="req">*</span></label>
+          <textarea id="articleConteudo" rows="10" required placeholder="Escreva cada parágrafo em linhas separadas por um ENTER vazio entre eles."></textarea>
+          <span class="field-hint">Separe parágrafos com uma linha em branco.</span>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="articleCategoria">Categoria <span class="req">*</span></label>
+            <select id="articleCategoria" required></select>
+          </div>
+          <div class="field">
+            <label for="articleAutor">Autor</label>
+            <input type="text" id="articleAutor" value="Equipa Podium" maxlength="100" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="articleData">Data de publicação</label>
+            <input type="datetime-local" id="articleData" />
+          </div>
+          <div class="field field--switches">
+            <label class="switch">
+              <input type="checkbox" id="articleDestaque" />
+              <span class="switch__slider"></span>
+              <span class="switch__label">⭐ Destaque no hero</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="articlePublicada" checked />
+              <span class="switch__slider"></span>
+              <span class="switch__label">✓ Publicada</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Imagem de capa</label>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="articleImagem" accept="image/*" hidden />
+            <div class="upload-zone__content" id="uploadContent">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p><strong>Clique para escolher</strong> ou arraste uma imagem</p>
+              <span class="field-hint">JPG, PNG ou WebP · Máx. 5 MB</span>
+            </div>
+            <div class="upload-zone__preview" id="uploadPreview" hidden>
+              <img id="uploadPreviewImg" alt="Pré-visualização" />
+              <button type="button" class="upload-zone__remove" id="uploadRemove" aria-label="Remover imagem">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Galeria de imagens <span class="field-hint" style="text-transform:none;letter-spacing:0;font-weight:400">(opcional, múltiplas imagens)</span></label>
+          <div class="upload-zone upload-zone--gallery" id="galleryZone">
+            <input type="file" id="articleGaleria" accept="image/*" multiple hidden />
+            <div class="upload-zone__content" id="galleryContent">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <p><strong>Adicionar imagens</strong> à galeria</p>
+              <span class="field-hint">Aparecerão na página da notícia em formato galeria com lightbox</span>
+            </div>
+          </div>
+          <div class="gallery-grid" id="galleryGrid" hidden></div>
+        </div>
+
+        <p class="form-error" id="articleFormError" aria-live="polite"></p>
+      </form>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="button" class="btn btn--danger" id="deleteArticleBtn" hidden>
+          Eliminar
+        </button>
+        <button type="submit" form="articleForm" class="btn btn--primary" id="saveArticleBtn">
+          Guardar
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- =============== MODAL: Editor de categoria =============== -->
+  <div class="modal" id="categoryModal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true">
+      <header class="modal__header">
+        <h2 id="categoryModalTitle">Nova categoria</h2>
+        <button class="icon-btn" data-close aria-label="Fechar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+      <form class="modal__body" id="categoryForm" novalidate>
+        <input type="hidden" id="categoryId" />
+        <div class="field-row">
+          <div class="field">
+            <label for="categoryNome">Nome <span class="req">*</span></label>
+            <input type="text" id="categoryNome" required maxlength="50" />
+          </div>
+          <div class="field" style="max-width:120px">
+            <label for="categoryEmoji">Emoji</label>
+            <input type="text" id="categoryEmoji" maxlength="4" style="font-size:1.5rem;text-align:center" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="categorySlug">Slug <span class="req">*</span></label>
+            <input type="text" id="categorySlug" required maxlength="50" pattern="[a-z0-9-]+" />
+            <span class="field-hint">Apenas minúsculas, números e hífenes.</span>
+          </div>
+          <div class="field" style="max-width:120px">
+            <label for="categoryCor">Cor</label>
+            <input type="color" id="categoryCor" value="#e63329" />
+          </div>
+        </div>
+        <p class="form-error" id="categoryFormError" aria-live="polite"></p>
+      </form>
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="button" class="btn btn--danger" id="deleteCategoryBtn" hidden>Eliminar</button>
+        <button type="submit" form="categoryForm" class="btn btn--primary" id="saveCategoryBtn">Guardar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- =============== MODAL: Editor de evento (agenda) =============== -->
+  <div class="modal" id="eventModal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel modal__panel--lg" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+      <header class="modal__header">
+        <h2 id="eventModalTitle">Novo evento</h2>
+        <button class="icon-btn" data-close aria-label="Fechar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+
+      <form class="modal__body" id="eventForm" novalidate>
+        <input type="hidden" id="eventId" />
+
+        <div class="field">
+          <label for="eventTitulo">Título <span class="req">*</span></label>
+          <input type="text" id="eventTitulo" required maxlength="200" placeholder="Ex: Final da Taça de Moçambique" />
+        </div>
+
+        <div class="field">
+          <label for="eventDescricao">Descrição</label>
+          <textarea id="eventDescricao" rows="2" maxlength="500" placeholder="Detalhes adicionais (opcional)"></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="eventCategoria">Categoria <span class="req">*</span></label>
+            <select id="eventCategoria" required></select>
+          </div>
+          <div class="field">
+            <label for="eventCompeticao">Competição</label>
+            <input type="text" id="eventCompeticao" maxlength="150" placeholder="Ex: Liga Nacional 2025/26" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="eventData">Data e hora <span class="req">*</span></label>
+            <input type="datetime-local" id="eventData" required />
+          </div>
+          <div class="field">
+            <label for="eventDuracao">Duração (minutos)</label>
+            <input type="number" id="eventDuracao" value="90" min="1" max="600" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="eventLocal">Local</label>
+            <input type="text" id="eventLocal" maxlength="150" placeholder="Ex: Estádio do Zimpeto" />
+          </div>
+          <div class="field">
+            <label for="eventCidade">Cidade</label>
+            <input type="text" id="eventCidade" maxlength="100" placeholder="Ex: Maputo" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="eventEquipaCasa">Equipa casa</label>
+            <input type="text" id="eventEquipaCasa" maxlength="100" placeholder="Opcional" />
+          </div>
+          <div class="field">
+            <label for="eventEquipaFora">Equipa visitante</label>
+            <input type="text" id="eventEquipaFora" maxlength="100" placeholder="Opcional" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="eventStatus">Estado</label>
+            <select id="eventStatus">
+              <option value="agendado">Agendado</option>
+              <option value="em_curso">Em curso</option>
+              <option value="terminado">Terminado</option>
+              <option value="cancelado">Cancelado</option>
+              <option value="adiado">Adiado</option>
+            </select>
+          </div>
+          <div class="field field--switches">
+            <label class="switch">
+              <input type="checkbox" id="eventDestaque" />
+              <span class="switch__slider"></span>
+              <span class="switch__label">⭐ Em destaque</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="eventPublicado" checked />
+              <span class="switch__slider"></span>
+              <span class="switch__label">✓ Publicado</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Resultado (só visível se status = terminado) -->
+        <div class="field-row" id="eventResultadoWrap" hidden>
+          <div class="field">
+            <label for="eventResultadoCasa">Resultado casa</label>
+            <input type="number" id="eventResultadoCasa" min="0" max="999" />
+          </div>
+          <div class="field">
+            <label for="eventResultadoFora">Resultado visitante</label>
+            <input type="number" id="eventResultadoFora" min="0" max="999" />
+          </div>
+        </div>
+
+        <p class="form-error" id="eventFormError" aria-live="polite"></p>
+      </form>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="button" class="btn btn--danger" id="deleteEventBtn" hidden>Eliminar</button>
+        <button type="submit" form="eventForm" class="btn btn--primary" id="saveEventBtn">Guardar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- =============== MODAL: Editor de resultado =============== -->
+  <div class="modal" id="resultModal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel modal__panel--lg" role="dialog" aria-modal="true" aria-labelledby="resultModalTitle">
+      <header class="modal__header">
+        <h2 id="resultModalTitle">Novo resultado</h2>
+        <button class="icon-btn" data-close aria-label="Fechar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+
+      <form class="modal__body" id="resultForm" novalidate>
+        <input type="hidden" id="resultId" />
+
+        <div class="field">
+          <label for="resultTitulo">Título <span class="req">*</span></label>
+          <input type="text" id="resultTitulo" required maxlength="200" placeholder="Ex: Costa do Sol vs Liga Muçulmana" />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="resultCategoria">Categoria <span class="req">*</span></label>
+            <select id="resultCategoria" required></select>
+          </div>
+          <div class="field">
+            <label for="resultData">Data e hora <span class="req">*</span></label>
+            <input type="datetime-local" id="resultData" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="resultCompeticao">Competição</label>
+          <input type="text" id="resultCompeticao" maxlength="150" placeholder="Ex: Liga Nacional - Jornada 27" />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="resultLocal">Local</label>
+            <input type="text" id="resultLocal" maxlength="150" />
+          </div>
+          <div class="field">
+            <label for="resultCidade">Cidade</label>
+            <input type="text" id="resultCidade" maxlength="100" />
+          </div>
+        </div>
+
+        <!-- Marcador -->
+        <div class="result-score-row">
+          <div class="field">
+            <label for="resultEquipaCasa">Equipa casa <span class="req">*</span></label>
+            <input type="text" id="resultEquipaCasa" required maxlength="100" />
+          </div>
+          <div class="field" style="max-width:90px">
+            <label for="resultMarcadorCasa">Casa</label>
+            <input type="number" id="resultMarcadorCasa" required min="0" max="999" style="font-size:1.5rem;text-align:center;font-weight:700" />
+          </div>
+          <div class="result-score-row__separator">–</div>
+          <div class="field" style="max-width:90px">
+            <label for="resultMarcadorFora">Fora</label>
+            <input type="number" id="resultMarcadorFora" required min="0" max="999" style="font-size:1.5rem;text-align:center;font-weight:700" />
+          </div>
+          <div class="field">
+            <label for="resultEquipaFora">Equipa visitante <span class="req">*</span></label>
+            <input type="text" id="resultEquipaFora" required maxlength="100" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="resultMVP">MVP / Jogador destaque</label>
+          <input type="text" id="resultMVP" maxlength="100" placeholder="Ex: João Silva" />
+        </div>
+
+        <div class="field">
+          <label for="resultObservacoes">Resumo / Observações</label>
+          <textarea id="resultObservacoes" rows="2" maxlength="500" placeholder="Breve descrição do jogo (opcional)"></textarea>
+        </div>
+
+        <!-- Estatísticas detalhadas -->
+        <div class="field">
+          <label>Estatísticas / Eventos do jogo
+            <span class="field-hint" style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span>
+          </label>
+          <div id="statsList" class="stats-list"></div>
+          <button type="button" class="btn btn--ghost btn--sm" id="addStatBtn" style="margin-top:0.5rem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Adicionar evento
+          </button>
+        </div>
+
+        <div class="field-row">
+          <div class="field field--switches">
+            <label class="switch">
+              <input type="checkbox" id="resultDestaque" />
+              <span class="switch__slider"></span>
+              <span class="switch__label">⭐ Em destaque</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="resultPublicado" checked />
+              <span class="switch__slider"></span>
+              <span class="switch__label">✓ Publicado</span>
+            </label>
+          </div>
+        </div>
+
+        <p class="form-error" id="resultFormError" aria-live="polite"></p>
+      </form>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="button" class="btn btn--danger" id="deleteResultBtn" hidden>Eliminar</button>
+        <button type="submit" form="resultForm" class="btn btn--primary" id="saveResultBtn">Guardar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- =============== MODAL: Editor de competição =============== -->
+  <div class="modal" id="competicaoModal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="competicaoModalTitle">
+      <header class="modal__header">
+        <h2 id="competicaoModalTitle">Nova competição</h2>
+        <button class="icon-btn" data-close aria-label="Fechar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+
+      <form class="modal__body" id="competicaoForm" novalidate>
+        <input type="hidden" id="competicaoId" />
+
+        <div class="field">
+          <label for="competicaoNome">Nome da competição <span class="req">*</span></label>
+          <input type="text" id="competicaoNome" required maxlength="200" placeholder="Ex: Liga Nacional 2025/26" />
+          <span class="field-hint" style="text-transform:none;letter-spacing:0;font-weight:400;display:block;margin-top:0.4rem">
+            ⚠ Deve coincidir EXACTAMENTE com o campo "Competição" usado nos resultados/agenda para a tabela calcular.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="competicaoCategoria">Categoria <span class="req">*</span></label>
+          <select id="competicaoCategoria" required></select>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="competicaoDataInicio">Data início</label>
+            <input type="date" id="competicaoDataInicio" />
+          </div>
+          <div class="field">
+            <label for="competicaoDataFim">Data fim</label>
+            <input type="date" id="competicaoDataFim" />
+          </div>
+        </div>
+
+        <h3 style="margin-top:1.5rem;margin-bottom:0.5rem;font-family:var(--ff-condensed);font-size:1rem;letter-spacing:1px;text-transform:uppercase;color:var(--clr-muted)">Sistema de pontos</h3>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="competicaoPontosVitoria">Vitória</label>
+            <input type="number" id="competicaoPontosVitoria" value="3" min="0" max="20" />
+          </div>
+          <div class="field">
+            <label for="competicaoPontosEmpate">Empate</label>
+            <input type="number" id="competicaoPontosEmpate" value="1" min="0" max="20" />
+          </div>
+          <div class="field">
+            <label for="competicaoPontosDerrota">Derrota</label>
+            <input type="number" id="competicaoPontosDerrota" value="0" min="0" max="20" />
+          </div>
+        </div>
+
+        <div class="field field--switches">
+          <label class="switch">
+            <input type="checkbox" id="competicaoAtiva" checked />
+            <span class="switch__slider"></span>
+            <span class="switch__label">📊 Activa (calcular tabela)</span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="competicaoPublicada" checked />
+            <span class="switch__slider"></span>
+            <span class="switch__label">✓ Publicada</span>
+          </label>
+        </div>
+
+        <p class="form-error" id="competicaoFormError" aria-live="polite"></p>
+      </form>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="button" class="btn btn--danger" id="deleteCompeticaoBtn" hidden>Eliminar</button>
+        <button type="submit" form="competicaoForm" class="btn btn--primary" id="saveCompeticaoBtn">Guardar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- =============== MODAL: Ajuste de pontos =============== -->
+  <div class="modal" id="ajusteModal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel modal__panel--sm" role="dialog" aria-modal="true" aria-labelledby="ajusteModalTitle">
+      <header class="modal__header">
+        <h2 id="ajusteModalTitle">Ajustar pontos</h2>
+        <button class="icon-btn" data-close aria-label="Fechar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+
+      <form class="modal__body" id="ajusteForm" novalidate>
+        <input type="hidden" id="ajusteCompeticaoId" />
+
+        <div class="field">
+          <label for="ajusteEquipa">Equipa <span class="req">*</span></label>
+          <input type="text" id="ajusteEquipa" required maxlength="100" />
+        </div>
+
+        <div class="field">
+          <label for="ajustePontos">Pontos <span class="req">*</span></label>
+          <input type="number" id="ajustePontos" required min="-100" max="100" placeholder="Negativo para penalização" />
+          <span class="field-hint" style="text-transform:none;letter-spacing:0;font-weight:400;display:block;margin-top:0.4rem">
+            Use valores negativos para penalizações. Ex: <code>-3</code> para subtrair 3 pontos.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="ajusteMotivo">Motivo</label>
+          <input type="text" id="ajusteMotivo" maxlength="200" placeholder="Ex: Penalização disciplinar" />
+        </div>
+
+        <p class="form-error" id="ajusteFormError" aria-live="polite"></p>
+      </form>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="submit" form="ajusteForm" class="btn btn--primary" id="saveAjusteBtn">Adicionar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- =============== CONFIRM DIALOG =============== -->
+  <div class="modal" id="confirmModal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel modal__panel--sm" role="alertdialog">
+      <header class="modal__header">
+        <h2 id="confirmTitle">Confirmar</h2>
+      </header>
+      <div class="modal__body">
+        <p id="confirmMessage">Tem a certeza?</p>
+      </div>
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="button" class="btn btn--danger" id="confirmOk">Confirmar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- =============== TOAST =============== -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="../supabase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
