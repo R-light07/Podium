@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Classificações desportivas — Podium" />
+  <meta name="theme-color" content="#0f0f0f">
+  <title>Classificações — Podium</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <a href="#main" class="skip-link">Saltar para o conteúdo</a>
+
+  <!-- HEADER simplificado -->
+  <header class="header header--minimal">
+    <nav class="header__navbar">
+      <div class="container header__navbar-inner header__navbar-inner--minimal">
+        <a href="index.html" class="header__logo-link" aria-label="Podium — Início">
+          <img src="./images/podium.png" alt="Logotipo da Podium" width="90px">
+        </a>
+        <a href="index.html" class="back-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          Voltar
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="classificacoes-page" id="main">
+    <div class="container">
+      <header class="classificacoes-page__header">
+        <h1>Classificações <span class="accent">Desportivas</span></h1>
+        <p>Tabelas calculadas automaticamente a partir dos resultados</p>
+      </header>
+
+      <div class="classificacoes-page__filters">
+        <select id="filterCategoria">
+          <option value="">Todas as categorias</option>
+        </select>
+        <select id="filterCompeticao">
+          <option value="">Todas as competições</option>
+        </select>
+      </div>
+
+      <div id="classificacoesContent">
+        <div class="resultados-loading" id="pageLoading">
+          <div class="spinner-small"></div>
+          <p>A carregar classificações...</p>
+        </div>
+      </div>
+      <div class="resultados-empty" id="pageEmpty" hidden>
+        <p>Nenhuma classificação disponível para os filtros seleccionados.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <a href="index.html" class="header__logo-link">
+          <img src="./images/podium.png" alt="Logotipo da Podium" width="90px">
+        </a>
+        <!-- <p>info@podium.co.mz</p> -->
+      </div>
+      <nav class="footer__nav" aria-label="Rodapé">
+        <div class="footer__col">
+          <strong>Podium</strong>
+          <a href="index.html#sobre-nos">Sobre nós</a>
+          <a href="index.html#equipa">Equipa</a>
+        </div>
+        <div class="footer__col">
+          <strong>Desporto</strong>
+          <a href="index.html#desportos">Categorias</a>
+          <a href="resultados.html">Resultados</a>
+          <a href="index.html#agenda">Agenda</a>
+        </div>
+      </nav>
+      <div class="footer__social">
+        <a href="#" aria-label="YouTube" class="social-link"><i class="fab fa-youtube"></i></a>
+        <a href="#" aria-label="Facebook" class="social-link"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" aria-label="Instagram" class="social-link"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>© 2026 Podium. Todos os direitos reservados.</p>
+      <a href="admin/" class="admin-link" title="Admin" aria-label="Acesso administrativo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="16" r="1"/><rect width="18" height="12" x="3" y="10" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+      </a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="data.js"></script>
+  <script src="classificacoes.js"></script>
+</body>
+</html>

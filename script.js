@@ -104,6 +104,20 @@ const api = sbClient ? {
       .limit(limit);
     if (error) { console.error(error); return []; }
     return data || [];
+  },
+  async fetchClassificacoes() {
+    const { data, error } = await sbClient
+      .from('classificacao_publica')
+      .select('*');
+    if (error) { console.error(error); return []; }
+    return data || [];
+  },
+  async fetchTopMarcadores() {
+    const { data, error } = await sbClient
+      .from('top_marcadores')
+      .select('*');
+    if (error) { console.error(error); return []; }
+    return data || [];
   }
 } : {
   // ===== MOCK API (fallback) =====
@@ -198,6 +212,38 @@ const api = sbClient ? {
         competicao: 'Qualificação Africana',
         mvp: null, observacoes: null, estatisticas: [],
         categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽' },
+    ];
+  },
+
+  async fetchClassificacoes() {
+    return [
+      { competicao_id: 1, competicao_nome: 'Liga Nacional 2025/26', competicao_slug: 'liga-nacional', categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽',
+        equipa: 'Costa do Sol',    jogos: 8, vitorias: 6, empates: 1, derrotas: 1, gm: 18, gs: 7, diferenca_golos: 11, pontos: 19, ajuste_pontos: 0 },
+      { competicao_id: 1, competicao_nome: 'Liga Nacional 2025/26', competicao_slug: 'liga-nacional', categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽',
+        equipa: 'Liga Muçulmana',  jogos: 8, vitorias: 5, empates: 2, derrotas: 1, gm: 14, gs: 6, diferenca_golos: 8,  pontos: 17, ajuste_pontos: 0 },
+      { competicao_id: 1, competicao_nome: 'Liga Nacional 2025/26', competicao_slug: 'liga-nacional', categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽',
+        equipa: 'Maxaquene',       jogos: 8, vitorias: 4, empates: 2, derrotas: 2, gm: 11, gs: 9, diferenca_golos: 2,  pontos: 14, ajuste_pontos: 0 },
+      { competicao_id: 1, competicao_nome: 'Liga Nacional 2025/26', competicao_slug: 'liga-nacional', categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽',
+        equipa: 'Ferroviário',     jogos: 8, vitorias: 3, empates: 3, derrotas: 2, gm: 10, gs: 9, diferenca_golos: 1,  pontos: 12, ajuste_pontos: 0 },
+      { competicao_id: 1, competicao_nome: 'Liga Nacional 2025/26', competicao_slug: 'liga-nacional', categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽',
+        equipa: 'Desportivo',      jogos: 8, vitorias: 2, empates: 2, derrotas: 4, gm: 7,  gs: 11, diferenca_golos: -4, pontos: 8,  ajuste_pontos: 0 },
+      { competicao_id: 1, competicao_nome: 'Liga Nacional 2025/26', competicao_slug: 'liga-nacional', categoria_slug: 'futebol', categoria_nome: 'Futebol', categoria_emoji: '⚽',
+        equipa: 'Têxtil',          jogos: 8, vitorias: 1, empates: 1, derrotas: 6, gm: 5,  gs: 16, diferenca_golos: -11, pontos: 1, ajuste_pontos: -3 },
+
+      { competicao_id: 2, competicao_nome: 'Campeonato Nacional Basket', competicao_slug: 'basket-nacional', categoria_slug: 'basketball', categoria_nome: 'Basketball', categoria_emoji: '🏀',
+        equipa: 'Maxaquene',     jogos: 6, vitorias: 5, empates: 0, derrotas: 1, gm: 432, gs: 380, diferenca_golos: 52, pontos: 11, ajuste_pontos: 0 },
+      { competicao_id: 2, competicao_nome: 'Campeonato Nacional Basket', competicao_slug: 'basket-nacional', categoria_slug: 'basketball', categoria_nome: 'Basketball', categoria_emoji: '🏀',
+        equipa: 'Ferroviário',   jogos: 6, vitorias: 4, empates: 0, derrotas: 2, gm: 410, gs: 388, diferenca_golos: 22, pontos: 10, ajuste_pontos: 0 },
+      { competicao_id: 2, competicao_nome: 'Campeonato Nacional Basket', competicao_slug: 'basket-nacional', categoria_slug: 'basketball', categoria_nome: 'Basketball', categoria_emoji: '🏀',
+        equipa: 'Costa do Sol',  jogos: 6, vitorias: 2, empates: 0, derrotas: 4, gm: 380, gs: 401, diferenca_golos: -21, pontos: 8, ajuste_pontos: 0 },
+    ];
+  },
+
+  async fetchTopMarcadores() {
+    return [
+      { competicao_id: 1, competicao_slug: 'liga-nacional', categoria_slug: 'futebol', jogador: 'Geny Catamo',   equipa: 'Costa do Sol',   golos: 7 },
+      { competicao_id: 1, competicao_slug: 'liga-nacional', categoria_slug: 'futebol', jogador: 'Telinho',       equipa: 'Liga Muçulmana', golos: 5 },
+      { competicao_id: 1, competicao_slug: 'liga-nacional', categoria_slug: 'futebol', jogador: 'Reginaldo',     equipa: 'Costa do Sol',   golos: 4 },
     ];
   }
 };
@@ -939,6 +985,92 @@ async function initResultados() {
 }
 
 /* ============================================================
+   8d. CLASSIFICAÇÕES — Tabelas no index
+   ============================================================ */
+async function initClassificacoes() {
+  const list    = $('#classificacoesList');
+  const loading = $('#classificacoesLoading');
+  const empty   = $('#classificacoesEmpty');
+  if (!list) return;
+
+  try {
+    const linhas = await api.fetchClassificacoes();
+    if (loading) loading.remove();
+
+    if (!linhas || linhas.length === 0) {
+      list.innerHTML = '';
+      if (empty) empty.hidden = false;
+      return;
+    }
+
+    // Agrupar por competição
+    const grupos = new Map();
+    for (const r of linhas) {
+      if (!grupos.has(r.competicao_id)) {
+        grupos.set(r.competicao_id, {
+          competicao_id: r.competicao_id,
+          nome: r.competicao_nome,
+          categoria_slug: r.categoria_slug,
+          categoria_nome: r.categoria_nome,
+          categoria_emoji: r.categoria_emoji,
+          equipas: []
+        });
+      }
+      grupos.get(r.competicao_id).equipas.push(r);
+    }
+
+    // Mostrar até 3 competições no index
+    const top3 = [...grupos.values()].slice(0, 3);
+
+    list.innerHTML = top3.map(g => {
+      const tagClass = (CATEGORIES[g.categoria_slug]?.tagClass) || '';
+      // Mostrar só top 5 equipas no preview
+      const equipas = g.equipas.slice(0, 5);
+
+      return `
+        <article class="classificacao-card">
+          <header class="classificacao-card__head">
+            <span class="tag ${tagClass}">${g.categoria_emoji || ''} ${escapeHTML(g.categoria_nome || '')}</span>
+            <h3 class="classificacao-card__title">${escapeHTML(g.nome)}</h3>
+          </header>
+          <table class="classificacao-public">
+            <thead>
+              <tr>
+                <th class="pos">#</th>
+                <th>Equipa</th>
+                <th>J</th>
+                <th>V</th>
+                <th>E</th>
+                <th>D</th>
+                <th>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${equipas.map((e, i) => `
+                <tr ${i === 0 ? 'class="leader"' : ''}>
+                  <td class="pos">${i + 1}</td>
+                  <td class="equipa">${escapeHTML(e.equipa)}</td>
+                  <td>${e.jogos}</td>
+                  <td>${e.vitorias}</td>
+                  <td>${e.empates}</td>
+                  <td>${e.derrotas}</td>
+                  <td class="pts">${e.pontos}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          ${g.equipas.length > 5 ? `<p class="classificacao-card__more">+${g.equipas.length - 5} equipa${g.equipas.length - 5 !== 1 ? 's' : ''}</p>` : ''}
+        </article>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Classificações:', err);
+    if (loading) loading.remove();
+    if (empty) empty.hidden = false;
+  }
+}
+
+/* ============================================================
    9. STATS COUNTER
    ============================================================ */
 function initStatsCounter() {
@@ -1063,6 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNewsSection();
   initAgenda();
   initResultados();
+  initClassificacoes();
   initStatsCounter();
   initNewsletter();
   initSmoothScroll();

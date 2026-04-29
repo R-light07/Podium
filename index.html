@@ -59,17 +59,17 @@
               Desportos <svg class="nav__chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div class="nav__dropdown-menu" role="menu" id="dropdown-desportos">
-              <a href="#noticias" role="menuitem" data-filter="futebol"><span>⚽</span>Futebol</a>
-              <a href="#noticias" role="menuitem" data-filter="basketball"><span>🏀</span>Basketball</a>
-              <a href="#noticias" role="menuitem" data-filter="tennis"><span>🎾</span>Ténis</a>
-              <a href="#noticias" role="menuitem" data-filter="atletismo"><span>🏃</span>Atletismo</a>
-              <a href="#noticias" role="menuitem" data-filter="motorsport"><span>🏎️</span>Motorsport</a>
-              <a href="#noticias" role="menuitem" data-filter="volei"><span>🏐</span>Voleibol</a>
+              <a href="#desportos" role="menuitem" data-filter="futebol"><span>⚽</span>Futebol</a>
+              <a href="#desportos" role="menuitem" data-filter="basketball"><span>🏀</span>Basketball</a>
+              <a href="#desportos" role="menuitem" data-filter="tennis"><span>🎾</span>Ténis</a>
+              <a href="#desportos" role="menuitem" data-filter="atletismo"><span>🏃</span>Atletismo</a>
+              <a href="#desportos" role="menuitem" data-filter="motorsport"><span>🏎️</span>Motorsport</a>
+              <a href="#desportos" role="menuitem" data-filter="volei"><span>🏐</span>Voleibol</a>
             </div>
           </div>
 
           <a href="#resultados" class="nav__link" role="menuitem" data-section="resultados">Resultados</a>
-          <a href="#assistir" class="nav__link" role="menuitem" data-section="assistir">Assistir</a>
+          <!-- <a href="#assistir" class="nav__link" role="menuitem" data-section="assistir">Assistir</a> -->
 
           <!-- Dropdown Mais -->
           <div class="nav__dropdown" role="none">
@@ -80,7 +80,7 @@
               <a href="#agenda" role="menuitem"><span>📅</span>Agenda</a>
               <a href="#podcasts" role="menuitem"><span>🎙️</span>Podcasts</a>
               <a href="#classificacoes" role="menuitem"><span>🏆</span>Classificações</a>
-              <a href="#favoritos" role="menuitem"><span>⭐</span>Favoritos</a>
+              <!-- <a href="#favoritos" role="menuitem"><span>⭐</span>Favoritos</a> -->
               <a href="#sobre-nos" role="menuitem"><span>ℹ️</span>Sobre Nós</a>
             </div>
           </div>
@@ -91,17 +91,20 @@
           <button class="icon-btn" id="searchToggleMobile" aria-label="Abrir pesquisa">
             <svg class="icon-btn__svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           </button>
-          <button class="icon-btn" id="dashboardBtn" aria-label="Ir ao Dashboard" title="Dashboard">
-            <svg class="icon-btn__svg icon-btn__dashboard" width="16" height="16" viewBox="0 0 24 24"     fill="none"   stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <!-- Sidebar -->
-              <rect x="3" y="3" width="6" height="18"></rect>
-              
-              <!-- Conteúdo principal -->
-              <rect x="11" y="3" width="10" height="6"></rect>
-              <rect x="11" y="11" width="10" height="10"></rect>
-            </svg>
-            <!-- <span class="icon-btn__badge" id="favoritesCount" hidden>0</span> -->
-          </button>
+          <div class="btn">
+              <button class="icon-btn" id="dashboardBtn" aria-label="Ir ao Dashboard" title="Dashboard">
+              <svg class="icon-btn__svg icon-btn__dashboard" width="16" height="16" viewBox="0 0 24 24"     fill="none"   stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Sidebar -->
+                <rect x="3" y="3" width="6" height="18"></rect>
+                
+                <!-- Conteúdo principal -->
+                <rect x="11" y="3" width="10" height="6"></rect>
+                <rect x="11" y="11" width="10" height="10"></rect>
+              </svg>
+              <!-- <span class="icon-btn__badge" id="favoritesCount" hidden>0</span> -->
+            </button>
+            <label for="dashboardBtn">Painel</label>
+          </div>
           <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="nav">
             <span></span><span></span><span></span>
           </button>
@@ -284,6 +287,25 @@
       </div>
       <div class="resultados-empty" id="resultadosEmpty" hidden>
         <p>Ainda não há resultados publicados.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CLASSIFICAÇÕES ========== -->
+  <section class="classificacoes" id="classificacoes">
+    <div class="container">
+      <div class="classificacoes__header">
+        <h2 class="section-title">Tabelas <span class="accent">Classificativas</span></h2>
+        <a href="classificacoes.html" class="resultados__view-all">Ver todas →</a>
+      </div>
+      <div class="classificacoes__list" id="classificacoesList">
+        <div class="resultados-loading" id="classificacoesLoading">
+          <div class="spinner-small"></div>
+          <p>A carregar tabelas...</p>
+        </div>
+      </div>
+      <div class="resultados-empty" id="classificacoesEmpty" hidden>
+        <p>Ainda não há classificações disponíveis.</p>
       </div>
     </div>
   </section>

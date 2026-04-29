@@ -3854,7 +3854,6 @@ mark {
   .resultados { padding: 3rem 0; }
   .resultados__header { flex-direction: column; align-items: flex-start; }
   .result-card__team-score { font-size: 1.6rem; }
-  .header__navbar-inner { display: flex; align-items: center; justify-content: space-between; width: 90%; }
 }
 
 /* ============================================================
@@ -3957,4 +3956,315 @@ mark {
   color: var(--clr-text-2);
   font-style: italic;
   margin: 0;
+}
+
+/* ============================================================
+   CLASSIFICAÇÕES — Secção no index + cards
+   ============================================================ */
+.classificacoes {
+  background: var(--clr-bg);
+  padding: 5rem 0;
+  border-top: 1px solid var(--clr-border);
+}
+.classificacoes__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.classificacoes__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1.5rem;
+}
+.classificacao-card {
+  background: var(--clr-bg-2);
+  border: 1px solid var(--clr-border);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.classificacao-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.classificacao-card__title {
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.2px;
+  margin: 0;
+  color: var(--clr-text);
+}
+.classificacao-card__more {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--clr-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+.classificacao-public {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.classificacao-public thead th {
+  text-align: center;
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--clr-muted);
+  padding: 0.4rem 0.4rem;
+  border-bottom: 1px solid var(--clr-border);
+}
+.classificacao-public thead th:nth-child(2) { text-align: left; }
+.classificacao-public tbody td {
+  padding: 0.55rem 0.4rem;
+  border-bottom: 1px solid var(--clr-border);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--clr-text-2, #c5c5c5);
+}
+.classificacao-public tbody tr:last-child td {
+  border-bottom: none;
+}
+.classificacao-public .pos {
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  color: var(--clr-muted);
+  width: 30px;
+}
+.classificacao-public .equipa {
+  text-align: left;
+  font-weight: 600;
+  color: var(--clr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+.classificacao-public .pts {
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--clr-text);
+}
+.classificacao-public tr.leader .pos,
+.classificacao-public tr.leader .equipa,
+.classificacao-public tr.leader .pts {
+  color: var(--clr-accent-2, #ff4f44);
+}
+.classificacao-public tr.leader .equipa::before {
+  content: '👑 ';
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .classificacoes { padding: 3rem 0; }
+  .classificacoes__header { flex-direction: column; align-items: flex-start; }
+  .classificacao-public { font-size: 0.8rem; }
+  .classificacao-public thead th,
+  .classificacao-public tbody td { padding: 0.4rem 0.25rem; }
+}
+
+/* ============================================================
+   PÁGINA DEDICADA classificacoes.html
+   ============================================================ */
+.classificacoes-page {
+  padding: 3rem 0 5rem;
+  min-height: 70vh;
+}
+.classificacoes-page__header {
+  margin-bottom: 2rem;
+}
+.classificacoes-page__header h1 {
+  font-family: var(--ff-condensed);
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.classificacoes-page__header p { color: var(--clr-muted); margin: 0; }
+
+.classificacoes-page__filters {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--clr-bg-2);
+  border: 1px solid var(--clr-border);
+  border-radius: 12px;
+}
+.classificacoes-page__filters select {
+  flex: 1 1 200px;
+  padding: 0.6rem 0.85rem;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: 8px;
+  color: var(--clr-text);
+  font-family: inherit;
+  outline: none;
+}
+.classificacoes-page__filters select:focus {
+  border-color: var(--clr-accent);
+}
+
+.classificacao-full {
+  background: var(--clr-bg-2);
+  border: 1px solid var(--clr-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.classificacao-full__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.classificacao-full__title {
+  font-family: var(--ff-condensed);
+  font-weight: 800;
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+.classificacao-full__rules {
+  font-size: 0.78rem;
+  color: var(--clr-muted);
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+.classificacao-full__rules strong { color: var(--clr-text); }
+
+.classificacao-full table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.classificacao-full table th,
+.classificacao-full table td {
+  padding: 0.65rem 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--clr-border);
+}
+.classificacao-full table th {
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--clr-muted);
+}
+.classificacao-full table th:nth-child(2),
+.classificacao-full table td:nth-child(2) {
+  text-align: left;
+}
+.classificacao-full table tbody tr:hover {
+  background: rgba(255,255,255,0.02);
+}
+.classificacao-full table .pos {
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  color: var(--clr-muted);
+}
+.classificacao-full table .equipa {
+  font-weight: 600;
+  color: var(--clr-text);
+}
+.classificacao-full table .pts {
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--clr-text);
+}
+.classificacao-full tr.leader .pos,
+.classificacao-full tr.leader .equipa,
+.classificacao-full tr.leader .pts {
+  color: var(--clr-accent-2, #ff4f44);
+}
+.classificacao-full tr.leader .equipa::before {
+  content: '👑 ';
+}
+
+.classificacao-full__marcadores {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--clr-border);
+}
+.classificacao-full__marcadores h3 {
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0 0 1rem;
+  color: var(--clr-muted);
+}
+.marcadores-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.marcadores-list li {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+.marcadores-list .pos {
+  font-family: var(--ff-condensed);
+  font-weight: 700;
+  color: var(--clr-muted);
+  text-align: center;
+}
+.marcadores-list .pos--first { color: var(--clr-accent-2); }
+.marcadores-list .golos {
+  font-family: var(--ff-display);
+  font-size: 1.2rem;
+  color: var(--clr-text);
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .classificacao-full { padding: 1rem; }
+  .classificacao-full table { font-size: 0.8rem; }
+  .classificacao-full table th,
+  .classificacao-full table td { padding: 0.5rem 0.25rem; }
+  .classificacao-full__head { flex-direction: column; align-items: flex-start; }
+
+  .resultados { padding: 3rem 0; }
+  .resultados__header { flex-direction: column; align-items: flex-start; }
+  .result-card__team-score { font-size: 1.6rem; }
+  .header__navbar-inner { display: flex; align-items: center; justify-content: space-between; width: 90%; }
+}
+
+.header__navbar-end .btn:hover label {
+  color: var(--clr-accent);
+  /* transition: .1s all ease-in; */
+}
+
+.header__navbar-end .btn label {
+  font-weight: 500;
 }

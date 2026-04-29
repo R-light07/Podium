@@ -89,18 +89,28 @@ const state = {
   categorias: [],
   events: [],
   results: [],
+  competicoes: [],
+  classificacao: [],
+  topMarcadores: [],
+  equipas: [],
+  jogadores: [],
   filters: { search: '', categoria: '', status: '' },
   eventFilters: { search: '', categoria: '', status: '' },
   resultFilters: { search: '', categoria: '', origem: '' },
+  equipaFilters: { search: '' },
+  jogadorFilters: { search: '', equipa: '' },
   editingId: null,
   editingCategoryId: null,
   editingEventId: null,
   editingResultId: null,
+  editingCompeticaoId: null,
+  editingEquipaId: null,
+  editingJogadorId: null,
   uploadedFile: null,
-  // Galeria: {url} para imagens já existentes em Supabase, {file} para novos uploads ainda por subir
   galleryItems: [],
-  // Estatísticas em edição
   statsItems: [],
+  // Vínculos jogador-equipa em edição
+  jogadorEquipasItems: [],
 };
 
 // ===== Utils =====
@@ -222,6 +232,9 @@ async function showApp() {
     loadNoticias(),
     loadEventos(),
     loadResultados(),
+    loadClassificacoes(),
+    loadEquipas(),
+    loadJogadores(),
   ]);
 
   // Activar primeira view
@@ -414,6 +427,133 @@ const api = {
     const { error } = await sb.from('resultados').delete().eq('id', id);
     if (error) throw error;
   },
+
+  // ===== COMPETIÇÕES + CLASSIFICAÇÕES =====
+  async listCompeticoes() {
+    const { data, error } = await sb.from('competicoes')
+      .select('*, categorias(id, slug, nome, emoji, cor)')
+      .order('nome');
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createCompeticao(payload) {
+    const { data, error } = await sb.from('competicoes')
+      .insert(payload).select().single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateCompeticao(id, payload) {
+    const { data, error } = await sb.from('competicoes')
+      .update(payload).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteCompeticao(id) {
+    const { error } = await sb.from('competicoes').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  async listClassificacao() {
+    // View calculada
+    const { data, error } = await sb.from('classificacao_publica').select('*');
+    if (error) throw error;
+    return data || [];
+  },
+
+  async listTopMarcadores() {
+    const { data, error } = await sb.from('top_marcadores').select('*');
+    if (error) throw error;
+    return data || [];
+  },
+
+  async listAjustes(competicaoId) {
+    const { data, error } = await sb.from('classificacoes_ajustes')
+      .select('*').eq('competicao_id', competicaoId)
+      .order('criada_em', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createAjuste(payload) {
+    const { data, error } = await sb.from('classificacoes_ajustes')
+      .insert(payload).select().single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteAjuste(id) {
+    const { error } = await sb.from('classificacoes_ajustes').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  // ===== EQUIPAS =====
+  async listEquipas() {
+    const { data, error } = await sb.from('equipas').select('*').order('nome');
+    if (error) throw error;
+    return data || [];
+  },
+  async createEquipa(payload) {
+    const { data, error } = await sb.from('equipas').insert(payload).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async updateEquipa(id, payload) {
+    const { data, error } = await sb.from('equipas').update(payload).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async deleteEquipa(id) {
+    const { error } = await sb.from('equipas').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  // ===== JOGADORES =====
+  async listJogadores() {
+    const { data, error } = await sb.from('jogadores_actuais').select('*').order('nome');
+    if (error) throw error;
+    return data || [];
+  },
+  async getJogador(id) {
+    const { data, error } = await sb.from('jogadores').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  async createJogador(payload) {
+    const { data, error } = await sb.from('jogadores').insert(payload).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async updateJogador(id, payload) {
+    const { data, error } = await sb.from('jogadores').update(payload).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async deleteJogador(id) {
+    const { error } = await sb.from('jogadores').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  // ===== JOGADORES_EQUIPAS (vínculos) =====
+  async listVinculosByJogador(jogadorId) {
+    const { data, error } = await sb.from('jogadores_equipas')
+      .select('*, equipas(id, nome)')
+      .eq('jogador_id', jogadorId)
+      .order('desde', { ascending: false, nullsFirst: false });
+    if (error) throw error;
+    return data || [];
+  },
+  async createVinculo(payload) {
+    const { data, error } = await sb.from('jogadores_equipas').insert(payload).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async deleteVinculo(id) {
+    const { error } = await sb.from('jogadores_equipas').delete().eq('id', id);
+    if (error) throw error;
+  },
 };
 
 // ============================================================
@@ -429,6 +569,9 @@ async function loadCategorias() {
     }
     if (typeof renderResultsCategoriesSelect === 'function') {
       renderResultsCategoriesSelect();
+    }
+    if (typeof renderCompeticaoCategoriasSelect === 'function') {
+      renderCompeticaoCategoriasSelect();
     }
     $('#countCategorias').textContent = state.categorias.length;
   } catch (err) {
@@ -1245,8 +1388,8 @@ function openEventEditor(id = null) {
     $('#eventDuracao').value = e.duracao_min || 90;
     $('#eventLocal').value = e.local || '';
     $('#eventCidade').value = e.cidade || '';
-    $('#eventEquipaCasa').value = e.equipa_casa || '';
-    $('#eventEquipaFora').value = e.equipa_fora || '';
+    fillEquipasSelect($('#eventEquipaCasaId'), { placeholder: '— Sem equipa —', selected: e.equipa_casa_id });
+    fillEquipasSelect($('#eventEquipaForaId'), { placeholder: '— Sem equipa —', selected: e.equipa_fora_id });
     $('#eventStatus').value = e.status || 'agendado';
     $('#eventDestaque').checked = !!e.destaque;
     $('#eventPublicado').checked = !!e.publicado;
@@ -1259,6 +1402,8 @@ function openEventEditor(id = null) {
     $('#eventStatus').value = 'agendado';
     $('#eventPublicado').checked = true;
     $('#eventDuracao').value = 90;
+    fillEquipasSelect($('#eventEquipaCasaId'), { placeholder: '— Sem equipa —' });
+    fillEquipasSelect($('#eventEquipaForaId'), { placeholder: '— Sem equipa —' });
     // Default: amanhã às 16:00
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -1314,8 +1459,11 @@ $('#eventForm')?.addEventListener('submit', async (e) => {
       duracao_min: parseInt($('#eventDuracao').value, 10) || 90,
       local: $('#eventLocal').value.trim() || null,
       cidade: $('#eventCidade').value.trim() || null,
-      equipa_casa: $('#eventEquipaCasa').value.trim() || null,
-      equipa_fora: $('#eventEquipaFora').value.trim() || null,
+      equipa_casa_id: $('#eventEquipaCasaId').value ? parseInt($('#eventEquipaCasaId').value, 10) : null,
+      equipa_fora_id: $('#eventEquipaForaId').value ? parseInt($('#eventEquipaForaId').value, 10) : null,
+      // Manter campos texto sincronizados (retrocompatibilidade)
+      equipa_casa: $('#eventEquipaCasaId').selectedOptions[0]?.textContent.trim() || null,
+      equipa_fora: $('#eventEquipaForaId').selectedOptions[0]?.textContent.trim() || null,
       status,
       destaque: $('#eventDestaque').checked,
       publicado: $('#eventPublicado').checked,
@@ -1324,6 +1472,9 @@ $('#eventForm')?.addEventListener('submit', async (e) => {
       resultado_fora: status === 'terminado' && $('#eventResultadoFora').value !== ''
         ? parseInt($('#eventResultadoFora').value, 10) : null,
     };
+    // Limpar "— Sem equipa —" do texto
+    if (payload.equipa_casa && payload.equipa_casa.startsWith('—')) payload.equipa_casa = null;
+    if (payload.equipa_fora && payload.equipa_fora.startsWith('—')) payload.equipa_fora = null;
 
     if (state.editingEventId) {
       await api.updateEvento(state.editingEventId, payload);
@@ -1338,6 +1489,7 @@ $('#eventForm')?.addEventListener('submit', async (e) => {
     state.editingEventId = null;
     await loadEventos();
     if (typeof loadResultados === 'function') await loadResultados();
+    if (typeof loadClassificacoes === 'function') await loadClassificacoes();
   } catch (err) {
     errEl.textContent = err.message || 'Erro ao guardar.';
     toast('Erro: ' + err.message, 'error');
@@ -1365,6 +1517,7 @@ async function handleDeleteEvent(id) {
     state.editingEventId = null;
     await loadEventos();
     if (typeof loadResultados === 'function') await loadResultados();
+    if (typeof loadClassificacoes === 'function') await loadClassificacoes();
   } catch (err) {
     toast('Erro ao eliminar: ' + err.message, 'error');
   }
@@ -1524,11 +1677,11 @@ async function openResultEditor(id = null) {
     $('#resultCompeticao').value = r.competicao || '';
     $('#resultLocal').value = r.local || '';
     $('#resultCidade').value = r.cidade || '';
-    $('#resultEquipaCasa').value = r.equipa_casa || '';
-    $('#resultEquipaFora').value = r.equipa_fora || '';
+    fillEquipasSelect($('#resultEquipaCasaId'), { placeholder: '— Escolher —', selected: r.equipa_casa_id });
+    fillEquipasSelect($('#resultEquipaForaId'), { placeholder: '— Escolher —', selected: r.equipa_fora_id });
     $('#resultMarcadorCasa').value = r.resultado_casa ?? '';
     $('#resultMarcadorFora').value = r.resultado_fora ?? '';
-    $('#resultMVP').value = r.mvp || '';
+    fillJogadoresSelect($('#resultMVPId'), { placeholder: '— Sem MVP —', selected: r.mvp_id });
     $('#resultObservacoes').value = r.observacoes || '';
     $('#resultDestaque').checked = !!r.destaque;
     $('#resultPublicado').checked = !!r.publicado;
@@ -1538,6 +1691,9 @@ async function openResultEditor(id = null) {
     $('#resultId').value = '';
     $('#resultPublicado').checked = true;
     $('#resultData').value = formatDateTimeLocal(new Date().toISOString());
+    fillEquipasSelect($('#resultEquipaCasaId'), { placeholder: '— Escolher —' });
+    fillEquipasSelect($('#resultEquipaForaId'), { placeholder: '— Escolher —' });
+    fillJogadoresSelect($('#resultMVPId'), { placeholder: '— Sem MVP —' });
   }
 
   renderStatsList();
@@ -1547,27 +1703,54 @@ async function openResultEditor(id = null) {
 function renderStatsList() {
   const list = $('#statsList');
   if (!list) return;
-  list.innerHTML = state.statsItems.map((s, i) => `
-    <div class="stat-row" data-index="${i}">
-      <input type="number" placeholder="Min." value="${s.minuto ?? ''}" data-field="minuto" min="0" max="200" />
-      <select data-field="tipo">
-        <option value="golo"     ${s.tipo === 'golo' ? 'selected' : ''}>Golo</option>
-        <option value="periodo"  ${s.tipo === 'periodo' ? 'selected' : ''}>Período / Set</option>
-        <option value="cartao"   ${s.tipo === 'cartao' ? 'selected' : ''}>Cartão</option>
-        <option value="outro"    ${s.tipo === 'outro' ? 'selected' : ''}>Outro</option>
-      </select>
-      <select data-field="equipa">
-        <option value="casa" ${s.equipa === 'casa' ? 'selected' : ''}>Casa</option>
-        <option value="fora" ${s.equipa === 'fora' ? 'selected' : ''}>Fora</option>
-      </select>
-      <input type="text" placeholder="Jogador / detalhe" value="${escapeHTML(s.jogador || s.detalhe || '')}" data-field="jogador" maxlength="100" />
-      <button type="button" class="stat-row__remove" data-action="remove" aria-label="Remover">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
-    </div>
-  `).join('');
 
-  // Bind change events para sincronizar state
+  // Obter IDs das equipas seleccionadas no resultForm para filtrar jogadores
+  const equipaCasaId = $('#resultEquipaCasaId')?.value || null;
+  const equipaForaId = $('#resultEquipaForaId')?.value || null;
+
+  list.innerHTML = state.statsItems.map((s, i) => {
+    const equipaIdAtual = s.equipa === 'casa' ? equipaCasaId
+                       : s.equipa === 'fora' ? equipaForaId
+                       : null;
+
+    // Lista de jogadores filtrada pela equipa do evento (se vinculados); senão todos
+    let jogadoresDisponiveis = state.jogadores;
+    if (equipaIdAtual) {
+      const filtrados = state.jogadores.filter(j => String(j.equipa_id) === String(equipaIdAtual));
+      if (filtrados.length > 0) jogadoresDisponiveis = filtrados;
+    }
+
+    // Para retro-compat: se s.jogador (texto) existe mas não há jogador_id, mostrar como custom
+    const jogadorIdSelect = s.jogador_id || '';
+    const jogadorNome = s.jogador_nome || s.jogador || s.detalhe || '';
+
+    return `
+      <div class="stat-row" data-index="${i}">
+        <input type="number" placeholder="Min." value="${s.minuto ?? ''}" data-field="minuto" min="0" max="200" />
+        <select data-field="tipo">
+          <option value="golo"     ${s.tipo === 'golo' ? 'selected' : ''}>Golo</option>
+          <option value="periodo"  ${s.tipo === 'periodo' ? 'selected' : ''}>Período / Set</option>
+          <option value="cartao"   ${s.tipo === 'cartao' ? 'selected' : ''}>Cartão</option>
+          <option value="outro"    ${s.tipo === 'outro' ? 'selected' : ''}>Outro</option>
+        </select>
+        <select data-field="equipa">
+          <option value="casa" ${s.equipa === 'casa' ? 'selected' : ''}>Casa</option>
+          <option value="fora" ${s.equipa === 'fora' ? 'selected' : ''}>Fora</option>
+        </select>
+        <select data-field="jogador_id">
+          <option value="">— ${jogadorNome && !jogadorIdSelect ? escapeHTML(jogadorNome) : 'Jogador'} —</option>
+          ${jogadoresDisponiveis.map(j =>
+            `<option value="${j.id}" ${String(jogadorIdSelect) === String(j.id) ? 'selected' : ''}>${escapeHTML(j.nome)}</option>`
+          ).join('')}
+        </select>
+        <button type="button" class="stat-row__remove" data-action="remove" aria-label="Remover">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  // Bind change events
   list.querySelectorAll('.stat-row').forEach(row => {
     const idx = parseInt(row.dataset.index, 10);
     row.querySelectorAll('input, select').forEach(input => {
@@ -1575,7 +1758,23 @@ function renderStatsList() {
         const field = input.dataset.field;
         let val = input.value;
         if (field === 'minuto') val = val ? parseInt(val, 10) : null;
-        state.statsItems[idx][field] = val;
+        if (field === 'jogador_id') {
+          val = val ? parseInt(val, 10) : null;
+          state.statsItems[idx].jogador_id = val;
+          // Capturar também o nome do jogador para retro-compat e displaying
+          if (val) {
+            const jog = state.jogadores.find(j => j.id === val);
+            state.statsItems[idx].jogador_nome = jog?.nome || '';
+            state.statsItems[idx].jogador = jog?.nome || ''; // legado
+          } else {
+            state.statsItems[idx].jogador_nome = '';
+            state.statsItems[idx].jogador = '';
+          }
+        } else {
+          state.statsItems[idx][field] = val;
+          // Ao mudar o lado (casa/fora), re-render para filtrar jogadores
+          if (field === 'equipa') renderStatsList();
+        }
       });
     });
     row.querySelector('[data-action="remove"]')?.addEventListener('click', () => {
@@ -1585,10 +1784,19 @@ function renderStatsList() {
   });
 }
 
+// Re-render stats quando equipas casa/fora mudam (filtragem de jogadores)
+$('#resultEquipaCasaId')?.addEventListener('change', () => {
+  if (state.statsItems.length > 0) renderStatsList();
+});
+$('#resultEquipaForaId')?.addEventListener('change', () => {
+  if (state.statsItems.length > 0) renderStatsList();
+});
+
 $('#addStatBtn')?.addEventListener('click', () => {
-  state.statsItems.push({ minuto: null, tipo: 'golo', equipa: 'casa', jogador: '' });
+  state.statsItems.push({ minuto: null, tipo: 'golo', equipa: 'casa', jogador_id: null, jogador_nome: '' });
   renderStatsList();
 });
+
 
 $('#newResultBtn')?.addEventListener('click', () => openResultEditor());
 
@@ -1602,21 +1810,26 @@ $('#resultForm')?.addEventListener('submit', async (e) => {
   const titulo = $('#resultTitulo').value.trim();
   const categoria_id = $('#resultCategoria').value;
   const data = $('#resultData').value;
-  const equipa_casa = $('#resultEquipaCasa').value.trim();
-  const equipa_fora = $('#resultEquipaFora').value.trim();
+  const equipa_casa_id_val = $('#resultEquipaCasaId').value;
+  const equipa_fora_id_val = $('#resultEquipaForaId').value;
   const marcadorCasa = $('#resultMarcadorCasa').value;
   const marcadorFora = $('#resultMarcadorFora').value;
 
   if (!titulo) { errEl.textContent = 'Título é obrigatório.'; return; }
   if (!categoria_id) { errEl.textContent = 'Escolha uma categoria.'; return; }
   if (!data) { errEl.textContent = 'Data é obrigatória.'; return; }
-  if (!equipa_casa || !equipa_fora) { errEl.textContent = 'Equipas (casa e visitante) são obrigatórias.'; return; }
+  if (!equipa_casa_id_val || !equipa_fora_id_val) { errEl.textContent = 'Equipas (casa e visitante) são obrigatórias.'; return; }
+  if (equipa_casa_id_val === equipa_fora_id_val) { errEl.textContent = 'As duas equipas têm de ser diferentes.'; return; }
   if (marcadorCasa === '' || marcadorFora === '') { errEl.textContent = 'Marcador é obrigatório.'; return; }
 
   btn.disabled = true;
   btn.textContent = 'A guardar...';
 
   try {
+    const equipaCasaSel = $('#resultEquipaCasaId').selectedOptions[0];
+    const equipaForaSel = $('#resultEquipaForaId').selectedOptions[0];
+    const mvpSel = $('#resultMVPId').selectedOptions[0];
+
     const payload = {
       titulo,
       categoria_id: parseInt(categoria_id, 10),
@@ -1624,11 +1837,15 @@ $('#resultForm')?.addEventListener('submit', async (e) => {
       competicao: $('#resultCompeticao').value.trim() || null,
       local: $('#resultLocal').value.trim() || null,
       cidade: $('#resultCidade').value.trim() || null,
-      equipa_casa,
-      equipa_fora,
+      equipa_casa_id: parseInt(equipa_casa_id_val, 10),
+      equipa_fora_id: parseInt(equipa_fora_id_val, 10),
+      // Texto cache (retro-compatibilidade)
+      equipa_casa: equipaCasaSel?.textContent.trim() || '',
+      equipa_fora: equipaForaSel?.textContent.trim() || '',
       resultado_casa: parseInt(marcadorCasa, 10),
       resultado_fora: parseInt(marcadorFora, 10),
-      mvp: $('#resultMVP').value.trim() || null,
+      mvp_id: $('#resultMVPId').value ? parseInt($('#resultMVPId').value, 10) : null,
+      mvp: ($('#resultMVPId').value && mvpSel) ? mvpSel.textContent.trim().split(' (')[0] : null,
       observacoes: $('#resultObservacoes').value.trim() || null,
       estatisticas: state.statsItems.filter(s => s.minuto !== null && s.minuto !== ''),
       destaque: $('#resultDestaque').checked,
@@ -1647,6 +1864,7 @@ $('#resultForm')?.addEventListener('submit', async (e) => {
     $('#resultModal').hidden = true;
     state.editingResultId = null;
     await loadResultados();
+    if (typeof loadClassificacoes === 'function') await loadClassificacoes();
   } catch (err) {
     errEl.textContent = err.message || 'Erro ao guardar.';
     toast('Erro: ' + err.message, 'error');
@@ -1673,8 +1891,853 @@ async function handleDeleteResult(id) {
     $('#resultModal').hidden = true;
     state.editingResultId = null;
     await loadResultados();
+    if (typeof loadClassificacoes === 'function') await loadClassificacoes();
   } catch (err) {
     toast('Erro ao eliminar: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// 15. VIEW: CLASSIFICAÇÕES
+// ============================================================
+async function loadClassificacoes() {
+  const loading = $('#competicoesLoading');
+  if (loading) loading.style.display = 'flex';
+  try {
+    // Carregar tudo em paralelo
+    const [competicoes, classificacao, topMarcadores] = await Promise.all([
+      api.listCompeticoes(),
+      api.listClassificacao().catch(() => []),
+      api.listTopMarcadores().catch(() => []),
+    ]);
+    state.competicoes = competicoes;
+    state.classificacao = classificacao;
+    state.topMarcadores = topMarcadores;
+    if ($('#countCompeticoes')) $('#countCompeticoes').textContent = competicoes.length;
+    renderClassificacoesView();
+  } catch (err) {
+    console.warn('Classificações:', err.message);
+    state.competicoes = [];
+    state.classificacao = [];
+    state.topMarcadores = [];
+    if ($('#countCompeticoes')) $('#countCompeticoes').textContent = '0';
+    renderClassificacoesView();
+  } finally {
+    if (loading) loading.style.display = 'none';
+  }
+}
+
+function renderCompeticaoCategoriasSelect() {
+  const sel = $('#competicaoCategoria');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Escolher —</option>' +
+    state.categorias.map(c =>
+      `<option value="${c.id}">${c.emoji} ${escapeHTML(c.nome)}</option>`
+    ).join('');
+}
+
+function renderClassificacoesView() {
+  const wrap = $('#competicoesWrap');
+  if (!wrap) return;
+
+  if (state.competicoes.length === 0) {
+    wrap.innerHTML = `
+      <div class="competicao-card__empty" style="background:var(--clr-bg-2);border:1px dashed var(--clr-border);border-radius:var(--radius);padding:3rem 1rem">
+        <p style="margin:0">Nenhuma competição criada ainda.</p>
+        <p style="margin:0.5rem 0 0;font-size:0.85rem">Crie uma competição com o nome <strong>exactamente igual</strong> ao usado no campo "Competição" dos resultados.</p>
+      </div>
+    `;
+    return;
+  }
+
+  wrap.innerHTML = state.competicoes.map(c => renderCompeticaoCard(c)).join('');
+
+  // Bind acções de edit/delete competição + ajustes
+  wrap.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id, 10);
+      const action = btn.dataset.action;
+      if (action === 'edit-competicao')   openCompeticaoEditor(id);
+      if (action === 'delete-competicao') handleDeleteCompeticao(id);
+      if (action === 'add-ajuste')        openAjusteEditor(id);
+      if (action === 'remove-ajuste')     handleRemoveAjuste(parseInt(btn.dataset.ajusteId, 10), id);
+    });
+  });
+}
+
+function renderCompeticaoCard(c) {
+  const cat = c.categorias || {};
+  const linhas = state.classificacao.filter(r => r.competicao_id === c.id);
+  const marcadores = state.topMarcadores.filter(m => m.competicao_id === c.id).slice(0, 5);
+
+  const tabelaHTML = linhas.length === 0
+    ? '<div class="competicao-card__empty">Sem jogos terminados ainda nesta competição.</div>'
+    : `
+      <table class="classificacao-table">
+        <thead>
+          <tr>
+            <th class="pos">#</th>
+            <th>Equipa</th>
+            <th class="num">J</th>
+            <th class="num">V</th>
+            <th class="num">E</th>
+            <th class="num">D</th>
+            <th class="num">GM</th>
+            <th class="num">GS</th>
+            <th class="num">DG</th>
+            <th class="pts">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${linhas.map((r, i) => {
+            const ajusteHTML = r.ajuste_pontos
+              ? `<span class="ajuste ajuste--${r.ajuste_pontos > 0 ? 'positivo' : 'negativo'}">(${r.ajuste_pontos > 0 ? '+' : ''}${r.ajuste_pontos})</span>`
+              : '';
+            return `
+              <tr>
+                <td class="pos">${i + 1}</td>
+                <td class="equipa">${escapeHTML(r.equipa)}</td>
+                <td class="num">${r.jogos}</td>
+                <td class="num">${r.vitorias}</td>
+                <td class="num">${r.empates}</td>
+                <td class="num">${r.derrotas}</td>
+                <td class="num">${r.gm}</td>
+                <td class="num">${r.gs}</td>
+                <td class="num">${r.diferenca_golos > 0 ? '+' : ''}${r.diferenca_golos}</td>
+                <td class="pts">${r.pontos}${ajusteHTML}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+
+  const marcadoresHTML = marcadores.length > 0 ? `
+    <div class="top-marcadores">
+      <h4 class="top-marcadores__title">⚽ Top Marcadores</h4>
+      <ol class="top-marcadores__list">
+        ${marcadores.map((m, i) => `
+          <li class="top-marcadores__item">
+            <span class="top-marcadores__pos ${i === 0 ? 'top-marcadores__pos--first' : ''}">${i + 1}</span>
+            <span><strong>${escapeHTML(m.jogador)}</strong> <small style="color:var(--clr-muted)">(${escapeHTML(m.equipa || '')})</small></span>
+            <span class="top-marcadores__golos">${m.golos}</span>
+          </li>
+        `).join('')}
+      </ol>
+    </div>
+  ` : '';
+
+  const status = !c.publicada ? '<span class="table__status table__status--rascunho">Rascunho</span>'
+    : !c.ativa ? '<span class="table__status table__status--rascunho">Inactiva</span>'
+    : '';
+
+  return `
+    <article class="competicao-card">
+      <header class="competicao-card__head">
+        <div>
+          <h2 class="competicao-card__title">
+            ${cat.emoji || ''} ${escapeHTML(c.nome)} ${status}
+          </h2>
+          <div class="competicao-card__meta">
+            <span>Vitória: <strong>${c.pontos_vitoria}</strong> pts</span>
+            <span>Empate: <strong>${c.pontos_empate}</strong> pts</span>
+            <span>Derrota: <strong>${c.pontos_derrota}</strong> pts</span>
+            <span>${linhas.length} equipa${linhas.length !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+        <div class="competicao-card__actions">
+          <button class="icon-btn" data-action="edit-competicao" data-id="${c.id}" title="Editar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          </button>
+          <button class="icon-btn" data-action="delete-competicao" data-id="${c.id}" title="Eliminar" style="color:#ef4444">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          </button>
+        </div>
+      </header>
+
+      ${tabelaHTML}
+      ${marcadoresHTML}
+
+      <footer class="competicao-card__bottom">
+        <button class="btn btn--ghost btn--sm" data-action="add-ajuste" data-id="${c.id}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Ajustar pontos
+        </button>
+      </footer>
+    </article>
+  `;
+}
+
+// ============================================================
+// 16. EDITOR DE COMPETIÇÃO
+// ============================================================
+function openCompeticaoEditor(id = null) {
+  state.editingCompeticaoId = id;
+  const modal = $('#competicaoModal');
+  const form = $('#competicaoForm');
+  form.reset();
+  $('#competicaoFormError').textContent = '';
+  $('#deleteCompeticaoBtn').hidden = !id;
+
+  renderCompeticaoCategoriasSelect();
+
+  if (id) {
+    const c = state.competicoes.find(x => x.id === id);
+    if (!c) return;
+    $('#competicaoModalTitle').textContent = 'Editar competição';
+    $('#competicaoId').value = c.id;
+    $('#competicaoNome').value = c.nome;
+    $('#competicaoCategoria').value = c.categoria_id || '';
+    $('#competicaoDataInicio').value = c.data_inicio || '';
+    $('#competicaoDataFim').value = c.data_fim || '';
+    $('#competicaoPontosVitoria').value = c.pontos_vitoria;
+    $('#competicaoPontosEmpate').value = c.pontos_empate;
+    $('#competicaoPontosDerrota').value = c.pontos_derrota;
+    $('#competicaoAtiva').checked = c.ativa;
+    $('#competicaoPublicada').checked = c.publicada;
+  } else {
+    $('#competicaoModalTitle').textContent = 'Nova competição';
+    $('#competicaoId').value = '';
+    $('#competicaoPontosVitoria').value = 3;
+    $('#competicaoPontosEmpate').value = 1;
+    $('#competicaoPontosDerrota').value = 0;
+    $('#competicaoAtiva').checked = true;
+    $('#competicaoPublicada').checked = true;
+  }
+
+  modal.hidden = false;
+}
+
+$('#newCompeticaoBtn')?.addEventListener('click', () => openCompeticaoEditor());
+
+function generateCompeticaoSlug(nome) {
+  return nome.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+$('#competicaoForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = $('#competicaoFormError');
+  const btn = $('#saveCompeticaoBtn');
+  errEl.textContent = '';
+
+  const nome = $('#competicaoNome').value.trim();
+  const categoria_id = $('#competicaoCategoria').value;
+
+  if (!nome) { errEl.textContent = 'Nome é obrigatório.'; return; }
+  if (!categoria_id) { errEl.textContent = 'Escolha uma categoria.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  try {
+    const payload = {
+      nome,
+      slug: generateCompeticaoSlug(nome),
+      categoria_id: parseInt(categoria_id, 10),
+      pontos_vitoria: parseInt($('#competicaoPontosVitoria').value, 10) || 3,
+      pontos_empate:  parseInt($('#competicaoPontosEmpate').value, 10)  || 1,
+      pontos_derrota: parseInt($('#competicaoPontosDerrota').value, 10) || 0,
+      data_inicio: $('#competicaoDataInicio').value || null,
+      data_fim:    $('#competicaoDataFim').value    || null,
+      ativa:       $('#competicaoAtiva').checked,
+      publicada:   $('#competicaoPublicada').checked,
+    };
+
+    if (state.editingCompeticaoId) {
+      await api.updateCompeticao(state.editingCompeticaoId, payload);
+      toast('Competição actualizada.', 'success');
+    } else {
+      await api.createCompeticao(payload);
+      toast('Competição criada.', 'success');
+    }
+
+    $('#competicaoModal').hidden = true;
+    state.editingCompeticaoId = null;
+    await loadClassificacoes();
+  } catch (err) {
+    errEl.textContent = err.message || 'Erro ao guardar.';
+    toast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
+});
+
+$('#deleteCompeticaoBtn')?.addEventListener('click', () => {
+  if (state.editingCompeticaoId) handleDeleteCompeticao(state.editingCompeticaoId);
+});
+
+async function handleDeleteCompeticao(id) {
+  const c = state.competicoes.find(x => x.id === id);
+  const ok = await confirmDialog(
+    'Eliminar competição',
+    `Eliminar "${c?.nome || 'esta competição'}"? Os jogos não serão apagados — só a tabela classificativa desaparece. Esta acção não pode ser desfeita.`
+  );
+  if (!ok) return;
+  try {
+    await api.deleteCompeticao(id);
+    toast('Competição eliminada.', 'success');
+    $('#competicaoModal').hidden = true;
+    state.editingCompeticaoId = null;
+    await loadClassificacoes();
+  } catch (err) {
+    toast('Erro ao eliminar: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// 17. AJUSTES DE PONTOS
+// ============================================================
+function openAjusteEditor(competicaoId) {
+  $('#ajusteCompeticaoId').value = competicaoId;
+  $('#ajusteForm').reset();
+  $('#ajusteFormError').textContent = '';
+  fillEquipasSelect($('#ajusteEquipaId'), { placeholder: '— Escolher —' });
+  $('#ajusteModal').hidden = false;
+}
+
+$('#ajusteForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = $('#ajusteFormError');
+  const btn = $('#saveAjusteBtn');
+  errEl.textContent = '';
+
+  const competicaoId = parseInt($('#ajusteCompeticaoId').value, 10);
+  const equipaId = $('#ajusteEquipaId').value;
+  const pontosStr = $('#ajustePontos').value;
+
+  if (!equipaId) { errEl.textContent = 'Escolha uma equipa.'; return; }
+  if (pontosStr === '') { errEl.textContent = 'Pontos obrigatórios.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  try {
+    const equipaSel = $('#ajusteEquipaId').selectedOptions[0];
+    await api.createAjuste({
+      competicao_id: competicaoId,
+      equipa_id: parseInt(equipaId, 10),
+      equipa: equipaSel?.textContent.trim() || '', // texto cache
+      pontos: parseInt(pontosStr, 10),
+      motivo: $('#ajusteMotivo').value.trim() || null,
+      criada_por: state.user.id,
+    });
+    toast('Ajuste adicionado.', 'success');
+    $('#ajusteModal').hidden = true;
+    await loadClassificacoes();
+  } catch (err) {
+    errEl.textContent = err.message;
+    toast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Adicionar';
+  }
+});
+
+async function handleRemoveAjuste(ajusteId, competicaoId) {
+  const ok = await confirmDialog('Remover ajuste', 'Tem a certeza que quer remover este ajuste?');
+  if (!ok) return;
+  try {
+    await api.deleteAjuste(ajusteId);
+    toast('Ajuste removido.', 'success');
+    await loadClassificacoes();
+  } catch (err) {
+    toast('Erro: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// 18. HELPERS — Selects de equipas/jogadores
+// ============================================================
+function fillEquipasSelect(selEl, options = {}) {
+  if (!selEl) return;
+  const { placeholder = '— Sem equipa —', selected = '' } = options;
+  selEl.innerHTML = `<option value="">${placeholder}</option>` +
+    state.equipas.map(e =>
+      `<option value="${e.id}" ${String(selected) === String(e.id) ? 'selected' : ''}>${escapeHTML(e.nome)}</option>`
+    ).join('');
+}
+
+function fillJogadoresSelect(selEl, options = {}) {
+  if (!selEl) return;
+  const { placeholder = '— Escolher —', selected = '', filterEquipaId = null } = options;
+  let lista = state.jogadores;
+  if (filterEquipaId) {
+    lista = lista.filter(j => String(j.equipa_id) === String(filterEquipaId));
+  }
+  selEl.innerHTML = `<option value="">${placeholder}</option>` +
+    lista.map(j => {
+      const sufixo = j.equipa_nome ? ` (${j.equipa_nome})` : '';
+      return `<option value="${j.id}" ${String(selected) === String(j.id) ? 'selected' : ''}>${escapeHTML(j.nome)}${escapeHTML(sufixo)}</option>`;
+    }).join('');
+}
+
+function refreshAllEquipasSelects() {
+  fillEquipasSelect($('#eventEquipaCasaId'),  { placeholder: '— Sem equipa —' });
+  fillEquipasSelect($('#eventEquipaForaId'),  { placeholder: '— Sem equipa —' });
+  fillEquipasSelect($('#resultEquipaCasaId'), { placeholder: '— Escolher —' });
+  fillEquipasSelect($('#resultEquipaForaId'), { placeholder: '— Escolher —' });
+  fillEquipasSelect($('#ajusteEquipaId'),     { placeholder: '— Escolher —' });
+  // Filtro de jogadores por equipa
+  const filterSel = $('#filterJogadorEquipa');
+  if (filterSel) {
+    filterSel.innerHTML = '<option value="">Todas as equipas</option>' +
+      state.equipas.map(e => `<option value="${e.id}">${escapeHTML(e.nome)}</option>`).join('');
+  }
+}
+
+function refreshAllJogadoresSelects() {
+  fillJogadoresSelect($('#resultMVPId'), { placeholder: '— Sem MVP —' });
+}
+
+// ============================================================
+// 19. VIEW: EQUIPAS
+// ============================================================
+async function loadEquipas() {
+  const loading = $('#equipasLoading');
+  if (loading) loading.style.display = 'flex';
+  try {
+    state.equipas = await api.listEquipas();
+    if ($('#countEquipas')) $('#countEquipas').textContent = state.equipas.length;
+    renderEquipasTable();
+    refreshAllEquipasSelects();
+  } catch (err) {
+    console.warn('Equipas:', err.message);
+    state.equipas = [];
+    if ($('#countEquipas')) $('#countEquipas').textContent = '0';
+    renderEquipasTable();
+  } finally {
+    if (loading) loading.style.display = 'none';
+  }
+}
+
+function getFilteredEquipas() {
+  const s = state.equipaFilters.search.toLowerCase().trim();
+  if (!s) return state.equipas;
+  return state.equipas.filter(e =>
+    (e.nome || '').toLowerCase().includes(s) ||
+    (e.cidade || '').toLowerCase().includes(s)
+  );
+}
+
+function renderEquipasTable() {
+  const tbody = $('#equipasTbody');
+  const empty = $('#equipasEmpty');
+  if (!tbody) return;
+
+  const rows = getFilteredEquipas();
+  if (rows.length === 0) {
+    tbody.innerHTML = '';
+    if (empty) empty.hidden = false;
+    return;
+  }
+  if (empty) empty.hidden = true;
+
+  // Contagem de jogadores por equipa
+  const jogadoresPorEquipa = {};
+  state.jogadores.forEach(j => {
+    if (j.equipa_id) {
+      jogadoresPorEquipa[j.equipa_id] = (jogadoresPorEquipa[j.equipa_id] || 0) + 1;
+    }
+  });
+
+  tbody.innerHTML = rows.map(e => `
+    <tr data-id="${e.id}" style="cursor:pointer">
+      <td><span class="table__titulo">${escapeHTML(e.nome)}</span></td>
+      <td style="color:var(--clr-text-2)">${escapeHTML(e.cidade || '—')}</td>
+      <td style="color:var(--clr-muted)">${e.fundada_em || '—'}</td>
+      <td style="color:var(--clr-muted)">${escapeHTML(e.cores || '—')}</td>
+      <td><strong>${jogadoresPorEquipa[e.id] || 0}</strong></td>
+      <td><div class="table__actions">
+        <button class="icon-btn" data-action="edit" title="Editar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+        </button>
+        <button class="icon-btn" data-action="delete" title="Eliminar" style="color:#ef4444">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div></td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    const id = parseInt(tr.dataset.id, 10);
+    tr.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('[data-action]');
+      if (btn) {
+        ev.stopPropagation();
+        if (btn.dataset.action === 'edit')   openEquipaEditor(id);
+        if (btn.dataset.action === 'delete') handleDeleteEquipa(id);
+      } else {
+        openEquipaEditor(id);
+      }
+    });
+  });
+}
+
+$('#equipaSearch')?.addEventListener('input', (e) => {
+  state.equipaFilters.search = e.target.value;
+  renderEquipasTable();
+});
+
+function openEquipaEditor(id = null) {
+  state.editingEquipaId = id;
+  const modal = $('#equipaModal');
+  const form = $('#equipaForm');
+  form.reset();
+  $('#equipaFormError').textContent = '';
+  $('#deleteEquipaBtn').hidden = !id;
+
+  if (id) {
+    const e = state.equipas.find(x => x.id === id);
+    if (!e) return;
+    $('#equipaModalTitle').textContent = 'Editar equipa';
+    $('#equipaId').value = e.id;
+    $('#equipaNome').value = e.nome;
+    $('#equipaCidade').value = e.cidade || '';
+    $('#equipaFundada').value = e.fundada_em || '';
+    $('#equipaCores').value = e.cores || '';
+    $('#equipaObservacoes').value = e.observacoes || '';
+  } else {
+    $('#equipaModalTitle').textContent = 'Nova equipa';
+    $('#equipaId').value = '';
+  }
+  modal.hidden = false;
+}
+
+$('#newEquipaBtn')?.addEventListener('click', () => openEquipaEditor());
+
+$('#equipaForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = $('#equipaFormError');
+  const btn = $('#saveEquipaBtn');
+  errEl.textContent = '';
+
+  const nome = $('#equipaNome').value.trim();
+  if (!nome) { errEl.textContent = 'Nome é obrigatório.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  try {
+    const payload = {
+      nome,
+      slug: nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, ''),
+      cidade: $('#equipaCidade').value.trim() || null,
+      fundada_em: $('#equipaFundada').value ? parseInt($('#equipaFundada').value, 10) : null,
+      cores: $('#equipaCores').value.trim() || null,
+      observacoes: $('#equipaObservacoes').value.trim() || null,
+    };
+
+    if (state.editingEquipaId) {
+      await api.updateEquipa(state.editingEquipaId, payload);
+      toast('Equipa actualizada.', 'success');
+    } else {
+      await api.createEquipa(payload);
+      toast('Equipa criada.', 'success');
+    }
+
+    $('#equipaModal').hidden = true;
+    state.editingEquipaId = null;
+    await loadEquipas();
+  } catch (err) {
+    errEl.textContent = err.message;
+    toast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
+});
+
+$('#deleteEquipaBtn')?.addEventListener('click', () => {
+  if (state.editingEquipaId) handleDeleteEquipa(state.editingEquipaId);
+});
+
+async function handleDeleteEquipa(id) {
+  const e = state.equipas.find(x => x.id === id);
+  const ok = await confirmDialog(
+    'Eliminar equipa',
+    `Eliminar "${e?.nome || 'esta equipa'}"? Os resultados/eventos existentes ficarão sem equipa associada.`
+  );
+  if (!ok) return;
+  try {
+    await api.deleteEquipa(id);
+    toast('Equipa eliminada.', 'success');
+    $('#equipaModal').hidden = true;
+    state.editingEquipaId = null;
+    await loadEquipas();
+    await loadJogadores();
+  } catch (err) {
+    toast('Erro ao eliminar: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// 20. VIEW: JOGADORES
+// ============================================================
+async function loadJogadores() {
+  const loading = $('#jogadoresLoading');
+  if (loading) loading.style.display = 'flex';
+  try {
+    state.jogadores = await api.listJogadores();
+    if ($('#countJogadores')) $('#countJogadores').textContent = state.jogadores.length;
+    renderJogadoresTable();
+    refreshAllJogadoresSelects();
+  } catch (err) {
+    console.warn('Jogadores:', err.message);
+    state.jogadores = [];
+    if ($('#countJogadores')) $('#countJogadores').textContent = '0';
+    renderJogadoresTable();
+  } finally {
+    if (loading) loading.style.display = 'none';
+  }
+}
+
+function getFilteredJogadores() {
+  const { search, equipa } = state.jogadorFilters;
+  const s = search.toLowerCase().trim();
+  return state.jogadores.filter(j => {
+    if (s && !(j.nome || '').toLowerCase().includes(s)
+         && !(j.apelido || '').toLowerCase().includes(s)) return false;
+    if (equipa && String(j.equipa_id) !== String(equipa)) return false;
+    return true;
+  });
+}
+
+function renderJogadoresTable() {
+  const tbody = $('#jogadoresTbody');
+  const empty = $('#jogadoresEmpty');
+  if (!tbody) return;
+
+  const rows = getFilteredJogadores();
+  if (rows.length === 0) {
+    tbody.innerHTML = '';
+    if (empty) empty.hidden = false;
+    return;
+  }
+  if (empty) empty.hidden = true;
+
+  tbody.innerHTML = rows.map(j => `
+    <tr data-id="${j.id}" style="cursor:pointer">
+      <td>
+        <span class="table__titulo">${escapeHTML(j.nome)}</span>
+        ${j.apelido ? `<br><small style="color:var(--clr-muted)">"${escapeHTML(j.apelido)}"</small>` : ''}
+      </td>
+      <td style="color:var(--clr-text-2)">${escapeHTML(j.equipa_nome || '— Sem equipa —')}</td>
+      <td style="color:var(--clr-muted)">${escapeHTML(j.posicao || '—')}</td>
+      <td style="color:var(--clr-muted)">${j.numero_actual ?? j.numero_camisola ?? '—'}</td>
+      <td><div class="table__actions">
+        <button class="icon-btn" data-action="edit" title="Editar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+        </button>
+        <button class="icon-btn" data-action="delete" title="Eliminar" style="color:#ef4444">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div></td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    const id = parseInt(tr.dataset.id, 10);
+    tr.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('[data-action]');
+      if (btn) {
+        ev.stopPropagation();
+        if (btn.dataset.action === 'edit')   openJogadorEditor(id);
+        if (btn.dataset.action === 'delete') handleDeleteJogador(id);
+      } else {
+        openJogadorEditor(id);
+      }
+    });
+  });
+}
+
+$('#jogadorSearch')?.addEventListener('input', (e) => {
+  state.jogadorFilters.search = e.target.value;
+  renderJogadoresTable();
+});
+$('#filterJogadorEquipa')?.addEventListener('change', (e) => {
+  state.jogadorFilters.equipa = e.target.value;
+  renderJogadoresTable();
+});
+
+async function openJogadorEditor(id = null) {
+  state.editingJogadorId = id;
+  state.jogadorEquipasItems = [];
+  const modal = $('#jogadorModal');
+  const form = $('#jogadorForm');
+  form.reset();
+  $('#jogadorFormError').textContent = '';
+  $('#deleteJogadorBtn').hidden = !id;
+
+  if (id) {
+    const j = await api.getJogador(id);
+    if (!j) return;
+    $('#jogadorModalTitle').textContent = 'Editar jogador';
+    $('#jogadorId').value = j.id;
+    $('#jogadorNome').value = j.nome;
+    $('#jogadorApelido').value = j.apelido || '';
+    $('#jogadorPosicao').value = j.posicao || '';
+    $('#jogadorNumero').value = j.numero_camisola ?? '';
+    $('#jogadorDataNasc').value = j.data_nascimento || '';
+    $('#jogadorObservacoes').value = j.observacoes || '';
+
+    // Carregar vínculos
+    const vinculos = await api.listVinculosByJogador(id);
+    state.jogadorEquipasItems = vinculos.map(v => ({
+      id: v.id,
+      equipa_id: v.equipa_id,
+      equipa_nome: v.equipas?.nome,
+      desde: v.desde,
+      ate: v.ate,
+      numero_camisola: v.numero_camisola,
+    }));
+  } else {
+    $('#jogadorModalTitle').textContent = 'Novo jogador';
+    $('#jogadorId').value = '';
+  }
+
+  renderJogadorEquipas();
+  modal.hidden = false;
+}
+
+function renderJogadorEquipas() {
+  const list = $('#jogadorEquipasList');
+  if (!list) return;
+  list.innerHTML = state.jogadorEquipasItems.map((v, i) => `
+    <div class="stat-row" data-index="${i}">
+      <select data-field="equipa_id" style="grid-column: span 2">
+        ${state.equipas.map(e =>
+          `<option value="${e.id}" ${String(v.equipa_id) === String(e.id) ? 'selected' : ''}>${escapeHTML(e.nome)}</option>`
+        ).join('')}
+      </select>
+      <input type="date" placeholder="Desde" value="${v.desde || ''}" data-field="desde" title="Desde" />
+      <input type="date" placeholder="Até (vazio = actual)" value="${v.ate || ''}" data-field="ate" title="Até (vazio = actual)" />
+      <button type="button" class="stat-row__remove" data-action="remove-vinculo" aria-label="Remover">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.stat-row').forEach(row => {
+    const idx = parseInt(row.dataset.index, 10);
+    row.querySelectorAll('input, select').forEach(input => {
+      input.addEventListener('input', () => {
+        const field = input.dataset.field;
+        let val = input.value || null;
+        if (field === 'equipa_id' && val) val = parseInt(val, 10);
+        state.jogadorEquipasItems[idx][field] = val;
+      });
+    });
+    row.querySelector('[data-action="remove-vinculo"]')?.addEventListener('click', () => {
+      state.jogadorEquipasItems.splice(idx, 1);
+      renderJogadorEquipas();
+    });
+  });
+}
+
+$('#addJogadorEquipaBtn')?.addEventListener('click', () => {
+  if (state.equipas.length === 0) {
+    toast('Crie pelo menos uma equipa primeiro.', 'error');
+    return;
+  }
+  state.jogadorEquipasItems.push({
+    equipa_id: state.equipas[0].id,
+    desde: null, ate: null, numero_camisola: null,
+  });
+  renderJogadorEquipas();
+});
+
+$('#newJogadorBtn')?.addEventListener('click', () => openJogadorEditor());
+
+$('#jogadorForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = $('#jogadorFormError');
+  const btn = $('#saveJogadorBtn');
+  errEl.textContent = '';
+
+  const nome = $('#jogadorNome').value.trim();
+  if (!nome) { errEl.textContent = 'Nome é obrigatório.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  try {
+    const payload = {
+      nome,
+      apelido: $('#jogadorApelido').value.trim() || null,
+      posicao: $('#jogadorPosicao').value.trim() || null,
+      numero_camisola: $('#jogadorNumero').value ? parseInt($('#jogadorNumero').value, 10) : null,
+      data_nascimento: $('#jogadorDataNasc').value || null,
+      observacoes: $('#jogadorObservacoes').value.trim() || null,
+    };
+
+    let jogadorId;
+    if (state.editingJogadorId) {
+      await api.updateJogador(state.editingJogadorId, payload);
+      jogadorId = state.editingJogadorId;
+      toast('Jogador actualizado.', 'success');
+    } else {
+      const created = await api.createJogador(payload);
+      jogadorId = created.id;
+      toast('Jogador criado.', 'success');
+    }
+
+    // Sincronizar vínculos: estratégia simples — apagar todos e recriar
+    if (state.editingJogadorId) {
+      const existentes = await api.listVinculosByJogador(jogadorId);
+      for (const v of existentes) await api.deleteVinculo(v.id);
+    }
+    for (const v of state.jogadorEquipasItems) {
+      if (v.equipa_id) {
+        await api.createVinculo({
+          jogador_id: jogadorId,
+          equipa_id: v.equipa_id,
+          desde: v.desde || null,
+          ate:   v.ate   || null,
+          numero_camisola: v.numero_camisola || null,
+        });
+      }
+    }
+
+    $('#jogadorModal').hidden = true;
+    state.editingJogadorId = null;
+    await loadJogadores();
+  } catch (err) {
+    errEl.textContent = err.message;
+    toast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
+});
+
+$('#deleteJogadorBtn')?.addEventListener('click', () => {
+  if (state.editingJogadorId) handleDeleteJogador(state.editingJogadorId);
+});
+
+async function handleDeleteJogador(id) {
+  const j = state.jogadores.find(x => x.id === id);
+  const ok = await confirmDialog(
+    'Eliminar jogador',
+    `Eliminar "${j?.nome || 'este jogador'}"? Os resultados/MVPs existentes ficarão sem jogador associado.`
+  );
+  if (!ok) return;
+  try {
+    await api.deleteJogador(id);
+    toast('Jogador eliminado.', 'success');
+    $('#jogadorModal').hidden = true;
+    state.editingJogadorId = null;
+    await loadJogadores();
+  } catch (err) {
+    toast('Erro: ' + err.message, 'error');
   }
 }
 
