@@ -4258,6 +4258,10 @@ mark {
   .resultados__header { flex-direction: column; align-items: flex-start; }
   .result-card__team-score { font-size: 1.6rem; }
   .header__navbar-inner { display: flex; align-items: center; justify-content: space-between; width: 90%; }
+
+  .header__navbar-end .btn label {
+    display: none;
+  }
 }
 
 .header__navbar-end .btn:hover label {
